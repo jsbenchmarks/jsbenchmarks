@@ -1,4 +1,4 @@
-import { buildData, unitmap } from 'common/data';
+import { buildData } from 'common/data';
 
 let selected = null;
 let unitSystem = 'metric';
@@ -12,14 +12,6 @@ const { cloneNode } = Node.prototype;
 const clone = n => cloneNode.call(n, true);
 
 // --- Templates & Helpers ---
-
-function getConversions() {
-  return {
-    weightConversion: unitSystem === 'metric' ? 1 : 2.20462,
-    powerConversion: unitSystem === 'metric' ? 1 : 0.00134102,
-    lengthConversion: unitSystem === 'metric' ? 1 : 0.393701
-  };
-}
 
 const trTemplate = document.createElement('tr');
 trTemplate.innerHTML = `
@@ -36,33 +28,50 @@ trTemplate.innerHTML = `
   </td>
 `;
 
-function createRowElement(row, conversions) {
+function createRowElement(row) {
   const tr = clone(trTemplate);
   tr._data = row;
-  updateRowContent(tr, row, conversions);
-  return tr;
-}
-
-function updateRowContent(tr, row, conversions) {
-  const { weightConversion, powerConversion, lengthConversion } = conversions;
+  
+  // Cache text node references for fast updates
   const cells = tr.cells;
-  cells[0].firstChild.data = row.id;
-  cells[1].firstChild.data = row.name;
-  cells[2].firstChild.data = `${(row.weight * weightConversion).toFixed(1)} ${unitmap.weight[unitSystem]}`;
-  cells[3].firstChild.data = `${(row.dimensions.height * lengthConversion).toFixed(1)} x ${(row.dimensions.width * lengthConversion).toFixed(1)} x ${(row.dimensions.depth * lengthConversion).toFixed(1)} ${unitmap.length[unitSystem]}`;
-  cells[4].firstChild.data = `${(row.powerConsumption * powerConversion).toFixed(1)} ${unitmap.power[unitSystem]}`;
-  cells[5].firstChild.data = `$${row.price.toFixed(2)}`;
-  cells[6].firstChild.data = row.availabilityStatus;
-  cells[7].firstChild.data = row.rating.toFixed(1);
-}
-
-function updateRowUnits(tr, conversions) {
-  const { weightConversion, powerConversion, lengthConversion } = conversions;
-  const cells = tr.children;
-  const row = tr._data;
-  cells[2].textContent = `${(row.weight * weightConversion).toFixed(1)} ${unitmap.weight[unitSystem]}`;
-  cells[3].textContent = `${(row.dimensions.height * lengthConversion).toFixed(1)} x ${(row.dimensions.width * lengthConversion).toFixed(1)} x ${(row.dimensions.depth * lengthConversion).toFixed(1)} ${unitmap.length[unitSystem]}`;
-  cells[4].textContent = `${(row.powerConsumption * powerConversion).toFixed(1)} ${unitmap.power[unitSystem]}`;
+  tr._nodes = {
+    id: cells[0].firstChild,
+    name: cells[1].firstChild,
+    weight: cells[2].firstChild,
+    dims: cells[3].firstChild,
+    power: cells[4].firstChild,
+    price: cells[5].firstChild,
+    status: cells[6].firstChild,
+    rating: cells[7].firstChild
+  };
+  
+  // Pre-compute both unit formats (eliminates toFixed on toggle)
+  const h = row.dimensions.height, w = row.dimensions.width, d = row.dimensions.depth;
+  tr._fmt = {
+    metric: {
+      weight: row.weight.toFixed(1) + ' kg',
+      dims: h.toFixed(1) + ' x ' + w.toFixed(1) + ' x ' + d.toFixed(1) + ' cm',
+      power: row.powerConsumption.toFixed(1) + ' w'
+    },
+    imperial: {
+      weight: (row.weight * 2.20462).toFixed(1) + ' lbs',
+      dims: (h * 0.393701).toFixed(1) + ' x ' + (w * 0.393701).toFixed(1) + ' x ' + (d * 0.393701).toFixed(1) + ' in',
+      power: (row.powerConsumption * 0.00134102).toFixed(1) + ' hp'
+    }
+  };
+  
+  // Set initial content using cached format
+  const n = tr._nodes, fmt = tr._fmt[unitSystem];
+  n.id.data = row.id;
+  n.name.data = row.name;
+  n.weight.data = fmt.weight;
+  n.dims.data = fmt.dims;
+  n.power.data = fmt.power;
+  n.price.data = '$' + row.price.toFixed(2);
+  n.status.data = row.availabilityStatus;
+  n.rating.data = row.rating.toFixed(1);
+  
+  return tr;
 }
 
 function setTableVisible(visible) {
@@ -80,31 +89,31 @@ function setTableVisible(visible) {
 function run() {
   const rows = buildData(1000);
   selected = null;
-  const conversions = getConversions();
   tbody.remove();
   tbody.textContent = '';
+  // Use DocumentFragment for batched DOM insertion
+  const fragment = document.createDocumentFragment();
   for (let i = 0; i < rows.length; i++) {
-    tbody.appendChild(createRowElement(rows[i], conversions));
+    fragment.appendChild(createRowElement(rows[i]));
   }
+  tbody.appendChild(fragment);
   table.appendChild(tbody);
   setTableVisible(true);
 }
 
 function add() {
   const newRows = buildData(1);
-  const conversions = getConversions();
   for (const row of newRows) {
-    tbody.appendChild(createRowElement(row, conversions));
+    tbody.appendChild(createRowElement(row));
   }
   setTableVisible(true);
 }
 
 function prepend() {
   const newRows = buildData(1);
-  const conversions = getConversions();
   const firstChild = tbody.firstChild;
   for (const row of newRows) {
-    tbody.insertBefore(createRowElement(row, conversions), firstChild);
+    tbody.insertBefore(createRowElement(row), firstChild);
   }
   setTableVisible(true);
 }
@@ -115,32 +124,39 @@ function insert() {
       return;
   }
   const newRows = buildData(1);
-  const conversions = getConversions();
   const refNode = tbody.children[10];
   for (const row of newRows) {
-    tbody.insertBefore(createRowElement(row, conversions), refNode);
+    tbody.insertBefore(createRowElement(row), refNode);
   }
   setTableVisible(true);
 }
 
 function update() {
   const rows = tbody.children;
-  for (let i = 0; i < rows.length; i++) {
+  const len = rows.length;
+  for (let i = 0; i < len; i++) {
     const tr = rows[i];
     const data = tr._data;
     if (data.availabilityStatus === "Out of Stock") {
-        data.availabilityStatus = "In Stock";
-        tr.children[6].textContent = "In Stock";
+      data.availabilityStatus = "In Stock";
+      tr._nodes.status.data = "In Stock";
     }
   }
 }
 
 function toggleUnits() {
   unitSystem = unitSystem === 'imperial' ? 'metric' : 'imperial';
-  const conversions = getConversions();
+  
   const rows = tbody.children;
-  for (let i = 0; i < rows.length; i++) {
-      updateRowUnits(rows[i], conversions);
+  const len = rows.length;
+  
+  for (let i = 0; i < len; i++) {
+    const tr = rows[i];
+    const n = tr._nodes;
+    const fmt = tr._fmt[unitSystem];  // Just swap cached strings!
+    n.weight.data = fmt.weight;
+    n.dims.data = fmt.dims;
+    n.power.data = fmt.power;
   }
 }
 
@@ -153,9 +169,12 @@ function clear() {
 function reverse() {
   const rows = Array.from(tbody.children);
   tbody.remove();
+  // Use DocumentFragment for batched re-insertion
+  const fragment = document.createDocumentFragment();
   for (let i = rows.length - 1; i >= 0; i--) {
-      tbody.appendChild(rows[i]);
+    fragment.appendChild(rows[i]);
   }
+  tbody.appendChild(fragment);
   table.appendChild(tbody);
 }
 
@@ -163,12 +182,19 @@ function sort() {
   const rows = Array.from(tbody.children);
   tbody.remove();
   
-  rows.sort((a, b) => a._data.name.localeCompare(b._data.name));
+  // Fast string comparison instead of localeCompare
+  rows.sort((a, b) => {
+    const nameA = a._data.name;
+    const nameB = b._data.name;
+    return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
+  });
   
+  // Use DocumentFragment for batched re-insertion
+  const fragment = document.createDocumentFragment();
   for (let i = 0; i < rows.length; i++) {
-      tbody.appendChild(rows[i]);
+    fragment.appendChild(rows[i]);
   }
-  
+  tbody.appendChild(fragment);
   table.appendChild(tbody);
 }
 
