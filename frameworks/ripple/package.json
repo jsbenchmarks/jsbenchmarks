@@ -13,10 +13,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "ripple": "latest"
+    "ripple": "0.2.197"
   },
   "devDependencies": {
-    "@ripple-ts/vite-plugin": "latest",
+    "@ripple-ts/vite-plugin": "0.2.197",
     "vite": "^6.3.5"
   }
 }
