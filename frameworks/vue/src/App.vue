@@ -46,10 +46,10 @@
 
 <script setup>
 import { buildData } from 'common/data'
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import Row from './Row.vue'
 
-const rows = ref([])
+const rows = shallowRef([])
 const selected = ref(null)
 const unitSystem = ref("metric")
 
