@@ -1,0 +1,97 @@
+import { track } from 'ripple';
+import { buildData as buildRawData, unitmap } from 'common/data';
+
+function createData(count) {
+  return buildRawData(count).map(row => ({
+    ...row,
+    availabilityStatus: track(row.availabilityStatus)
+  }));
+}
+
+export component App() {
+  let rows = track([]);
+  let selected = track(null);
+  let unitSystem = track('metric');
+
+  let weightConversion = track(() => @unitSystem === 'metric' ? 1 : 2.20462);
+  let powerConversion = track(() => @unitSystem === 'metric' ? 1 : 0.00134102);
+  let lengthConversion = track(() => @unitSystem === 'metric' ? 1 : 0.393701);
+
+  <main>
+    <div class="header">
+      <h1>{"Ripple"}</h1>
+      <div class="actions">
+        <button id="create" onClick={() => { @rows = createData(1000); }}>{"Create"}</button>
+        <button id="reverse" onClick={() => { @rows = @rows.toReversed(); }}>{"Reverse"}</button>
+        <button id="insert" onClick={() => { @rows = [...@rows.slice(0, 10), ...createData(1), ...@rows.slice(10)]; }}>{"Insert"}</button>
+        <button id="prepend" onClick={() => { @rows = [...createData(1), ...@rows]; }}>{"Prepend"}</button>
+        <button id="append" onClick={() => { @rows = [...@rows, ...createData(1)]; }}>{"Append"}</button>
+        <button id="sort" onClick={() => { @rows = @rows.toSorted((a, b) => a.name.localeCompare(b.name)); }}>{"Sort"}</button>
+        <button id="filter" onClick={() => { @rows = @rows.filter((d) => d.id % 2); }}>{"Filter"}</button>
+        <button id="units" onClick={() => { @unitSystem = @unitSystem === 'imperial' ? 'metric' : 'imperial'; }}>{"Units"}</button>
+        <button id="restock" onClick={() => { @rows.forEach(r => { if (r.@availabilityStatus === "Out of Stock") { r.@availabilityStatus = "In Stock"; } }); }}>{"Restock"}</button>
+        <button id="clear" onClick={() => { @rows = []; }}>{"Clear"}</button>
+      </div>
+    </div>
+
+    if (@rows.length) {
+      <table>
+        <thead>
+          <tr>
+            <th>{"id"}</th>
+            <th>{"name"}</th>
+            <th>{"weight"}</th>
+            <th>{"dimensions"}</th>
+            <th>{"power consumption"}</th>
+            <th>{"price"}</th>
+            <th>{"availability status"}</th>
+            <th>{"rating"}</th>
+            <th>{"actions"}</th>
+          </tr>
+        </thead>
+        <tbody>
+          for (const row of @rows) {
+            <tr
+              class={@selected === row.id ? 'selected' : ''}
+              onClick={() => { @selected = row.id; }}
+            >
+              <td>{row.id}</td>
+              <td>{row.name}</td>
+              <td>
+                {(row.weight * @weightConversion).toFixed(1)}{" "}
+                {unitmap.weight[@unitSystem]}
+              </td>
+              <td>
+                const { height, width, depth } = row.dimensions;
+                {(height * @lengthConversion).toFixed(1)}{" x "}
+                {(width * @lengthConversion).toFixed(1)}{" x "}
+                {(depth * @lengthConversion).toFixed(1)}{" "}
+                {unitmap.length[@unitSystem]}
+              </td>
+              <td>
+                {(row.powerConsumption * @powerConversion).toFixed(1)}{" "}
+                {unitmap.power[@unitSystem]}
+              </td>
+              <td>{"$"}{row.price.toFixed(2)}</td>
+              <td>{row.@availabilityStatus}</td>
+              <td>{row.rating.toFixed(1)}</td>
+              <td>
+                <button
+                  class="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    @rows = @rows.filter(r => r.id !== row.id);
+                  }}
+                >
+                  {"delete"}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } else {
+      <h2 class="text-center">{"No rows to show"}</h2>
+    }
+  </main>
+}
