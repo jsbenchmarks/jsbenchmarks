@@ -24,6 +24,8 @@ export interface RawResult {
   brotliBundle: number;
   website?: string;
   version?: string;
+  stars?: number;
+  downloads?: number;
 }
 
 export interface Result extends RawResult {

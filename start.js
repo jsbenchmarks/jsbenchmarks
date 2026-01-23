@@ -10,6 +10,46 @@ import { benchmarks as allBenchmarks } from "./tests.js";
 const gzip = util.promisify(zlib.gzip);
 const brotli = util.promisify(zlib.brotliCompress);
 
+async function fetchStats(packageName) {
+  if (!packageName) return { stars: 0, downloads: 0 };
+  
+  let stars = 0;
+  let downloads = 0;
+  
+  try {
+    const downloadRes = await fetch(`https://api.npmjs.org/downloads/point/last-week/${packageName}`);
+    if (downloadRes.ok) {
+        const data = await downloadRes.json();
+        downloads = data.downloads || 0;
+    }
+  } catch (e) {
+    console.error(`Failed to fetch downloads for ${packageName}:`, e.message);
+  }
+
+  try {
+    const registryRes = await fetch(`https://registry.npmjs.org/${packageName}`);
+    if (registryRes.ok) {
+        const data = await registryRes.json();
+        const repoUrl = data.repository?.url || "";
+        const match = repoUrl.match(/github\.com[\/:]([^\/]+)\/([^\/]+)/);
+        if (match) {
+            const owner = match[1];
+            let repo = match[2];
+            if (repo.endsWith('.git')) repo = repo.slice(0, -4);
+            const githubRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+            if (githubRes.ok) {
+                const ghData = await githubRes.json();
+                stars = ghData.stargazers_count || 0;
+            }
+        }
+    }
+  } catch (e) {
+     console.error(`Failed to fetch repo info for ${packageName}:`, e.message);
+  }
+  
+  return { stars, downloads };
+}
+
 async function calculateSizes(directoryPath) {
   const files = await fs.promises.readdir(directoryPath);
   let totalRaw = 0;
@@ -63,6 +103,10 @@ async function execute(page, tasks, j) {
       alias: "b",
       type: "string",
       description: "A comma-separated list of benchmarks to run (e.g., 'create,select,clear')",
+    })
+    .option("skip-benchmarks", {
+      type: "boolean",
+      description: "Skip running benchmarks, only update stats and sizes",
     })
     .help()
     .alias("help", "h")
@@ -128,44 +172,51 @@ async function execute(page, tasks, j) {
         website: pkg.jsbenchmarks ? pkg.jsbenchmarks.website : pkg.website,
         version: version.replace(/^\^|~/, "")
       };
+
+      const stats = await fetchStats(pkg.jsbenchmarks?.package);
+      result.stars = stats.stars;
+      result.downloads = stats.downloads;
+
       const sizes = await calculateSizes(`./frameworks/${fw}/dist`);
       result.gzipBundle = sizes.gzip;
       result.rawBundle = sizes.raw;
       result.brotliBundle = sizes.brotli;
       console.log(`${fw} bundle: gzip ${Math.round(sizes.gzip / 100) / 10}KB, raw ${Math.round(sizes.raw / 100) / 10}KB, brotli ${Math.round(sizes.brotli / 100) / 10}KB`);
       currentRunResults.push(result);
-      for (let i = 0; i < benchmarks.length; i++) {
-        const benchmark = benchmarks[i];
-        const benchmarkResult = {
-          name: benchmark.name,
-          measurements: [],
-        };
-        result.benchmarks.push(benchmarkResult);
-        for (let i = 0; i < benchmark.runs; i++) {
-          const page = await browser.newPage();
-          page.setDefaultTimeout(5000);
-          await page.goto(`http://localhost:3000/frameworks/${fw}/dist/`);
-          await page.waitForSelector("main")
-          await page.setViewport({ width: 1200, height: 800 });
-          await execute(page, benchmark.setup);
-          for (let j = 0; j < 5; j++) {
-            await execute(page, benchmark.warmup, j);
+      if (!argv.skipBenchmarks) {
+        for (let i = 0; i < benchmarks.length; i++) {
+          const benchmark = benchmarks[i];
+          const benchmarkResult = {
+            name: benchmark.name,
+            measurements: [],
+          };
+          result.benchmarks.push(benchmarkResult);
+          for (let i = 0; i < benchmark.runs; i++) {
+            const page = await browser.newPage();
+            page.setDefaultTimeout(5000);
+            await page.goto(`http://localhost:3000/frameworks/${fw}/dist/`);
+            await page.waitForSelector("main")
+            await page.setViewport({ width: 1200, height: 800 });
+            await execute(page, benchmark.setup);
+            for (let j = 0; j < 5; j++) {
+              await execute(page, benchmark.warmup, j);
+            }
+            await page.click("#clear");
+            await page.waitForSelector("h2");
+            await execute(page, benchmark.setup);
+            await page.evaluate(() => window.gc());
+            await new Promise(r => setTimeout(r));
+            const start = performance.now();
+            await execute(page, benchmark.measure);
+            await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+            const duration = performance.now() - start;
+            await page.evaluate(() => window.gc());
+            await new Promise(r => setTimeout(r));
+            const memory = await page.evaluate(() => performance.memory.usedJSHeapSize);
+            benchmarkResult.measurements.push({ duration, memory });
+            console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB" });
+            await page.close();
           }
-          await page.click("#clear");
-          await page.waitForSelector("h2");
-          await execute(page, benchmark.setup);
-          await page.evaluate(() => window.gc());
-          await new Promise(r => setTimeout(r));
-          const start = performance.now();
-          await execute(page, benchmark.measure);
-          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-          const duration = performance.now() - start;
-          await page.evaluate(() => window.gc());
-          await new Promise(r => setTimeout(r));
-          const memory = await page.evaluate(() => performance.memory.usedJSHeapSize);
-          benchmarkResult.measurements.push({ duration, memory });
-          console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB" });
-          await page.close();
         }
       }
     } catch (e) {
@@ -204,6 +255,8 @@ async function execute(page, tasks, j) {
       rawBundle: current.rawBundle ?? existing.rawBundle,
       gzipBundle: current.gzipBundle ?? existing.gzipBundle,
       brotliBundle: current.brotliBundle ?? existing.brotliBundle,
+      stars: current.stars || existing.stars,
+      downloads: current.downloads || existing.downloads,
       benchmarks: mergedBenchmarks,
     };
   }

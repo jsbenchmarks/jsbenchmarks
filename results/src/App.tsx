@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import './App.css';
 import { BundleTable } from './components/BundleTable';
+import { StatsTable } from './components/StatsTable';
 import { DurationTable } from './components/DurationTable';
 import { MemoryTable } from './components/MemoryTable';
 import { results as rawResults } from './data';
@@ -14,6 +15,7 @@ function App() {
   const [memorySort, setMemorySort] = useState<SortConfig<string>>({ key: COMPOSITE_NAME, dir: 'asc' });
 
   const [bundleSort, setBundleSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeBundle', dir: 'asc' });
+  const [statsSort, setStatsSort] = useState<SortConfig<keyof Result>>({ key: 'stars', dir: 'desc' });
 
   const baseRows = useMemo(() => calculateResults(inputData), []);
 
@@ -35,6 +37,13 @@ function App() {
     setBundleSort(prev => ({
       key,
       dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const handleStatsSort = (key: keyof Result) => {
+    setStatsSort(prev => ({
+      key,
+      dir: prev.key === key && prev.dir === 'desc' ? 'asc' : 'desc'
     }));
   };
 
@@ -67,6 +76,16 @@ function App() {
     });
     return copy;
   }, [baseRows, bundleSort]);
+
+  const statsRows = useMemo(() => {
+    const copy = [...baseRows];
+    copy.sort((a, b) => {
+        const aVal = a[statsSort.key] ?? 0;
+        const bVal = b[statsSort.key] ?? 0;
+        return statsSort.dir === 'asc' ? (aVal < bVal ? -1 : 1) : (aVal > bVal ? -1 : 1);
+    });
+    return copy;
+  }, [baseRows, statsSort]);
 
   const benchmarkNames = baseRows[0].benchmarks.map(b => b.name);
 
@@ -109,6 +128,12 @@ function App() {
         rows={bundleRows} 
         sortConfig={bundleSort} 
         onSort={handleBundleSort} 
+      />
+      <h2 className="App-h2">Popularity</h2>
+      <StatsTable 
+        rows={statsRows} 
+        sortConfig={statsSort} 
+        onSort={handleStatsSort} 
       />
     </main>
   );
