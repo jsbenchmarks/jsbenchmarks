@@ -50,7 +50,6 @@ func Middleware(handler http.HandlerFunc) http.HandlerFunc {
 			slog.String("country", r.Header.Get("CF-IPCountry")),
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
-			slog.String("referer", r.Referer()),
 			slog.Int("status", rw.status),
 			slog.Duration("latency", time.Since(start).Round(time.Microsecond)),
 		)
