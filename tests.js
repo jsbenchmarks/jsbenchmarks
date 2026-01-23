@@ -31,6 +31,7 @@ export const benchmarks = [
           if (rows.length === 1000) {
             window.lastFirstID = rows[0].querySelector("td").textContent;
             window.lastLastID = rows[rows.length - 1].querySelector("td").textContent;
+            window.lastFirstRow = rows[0];
             return true;
           }
           return false;
@@ -51,7 +52,8 @@ export const benchmarks = [
           if (rows.length < 1000) return false;
           const first = rows[0].querySelector("td").textContent;
           const last = rows[rows.length - 1].querySelector("td").textContent;
-          return first !== window.lastFirstID && last !== window.lastLastID && first.length === 4;
+          const height = rows[0].offsetHeight; // Force reflow
+          return first !== window.lastFirstID && last !== window.lastLastID && rows[0] !== window.lastFirstRow && first.length === 4 && height > 0;
         },
       },
     ],
