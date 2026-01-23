@@ -9,7 +9,6 @@
     weightConversion,
   } from "./state.thyn.js";
 
-  const {row} = $props;
   const {
     id,
     name,
@@ -23,7 +22,7 @@
     price,
     availabilityStatus,
     rating,
-  } = row;
+  } = $props;
 </script>
 
 <tr class={selected() === id ? 'selected' : undefined} onclick={() => selected(s => s === id ? null : id)}>

@@ -54,7 +54,7 @@
       </tr>
     </thead>
     <tbody>
-      <Row #for={row in data()} row={row}></Row>
+      <Row #for={row in data()} #props={row}></Row>
     </tbody>
   </table>
 </main>
