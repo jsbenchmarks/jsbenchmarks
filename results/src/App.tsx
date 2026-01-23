@@ -78,7 +78,7 @@ function App() {
   }, [baseRows, bundleSort]);
 
   const statsRows = useMemo(() => {
-    const copy = [...baseRows];
+    const copy = baseRows.filter(r => r.framework !== 'vanillajs');
     copy.sort((a, b) => {
         const aVal = a[statsSort.key] ?? 0;
         const bVal = b[statsSort.key] ?? 0;
