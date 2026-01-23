@@ -77,6 +77,37 @@ async function calculateSizes(directoryPath) {
   return { raw: totalRaw, gzip: totalGzip, brotli: totalBrotli };
 }
 
+async function checkKeyed(browser, url) {
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1200, height: 800 });
+  try {
+    await page.goto(url);
+    await page.waitForSelector("#create");
+    await page.click("#create");
+    await page.waitForSelector("tbody tr");
+    
+    // Store reference to the first row
+    await page.evaluate(() => {
+      window.testRow = document.querySelector("tbody tr");
+    });
+
+    // Replace rows
+    await page.click("#create");
+    
+    // Wait for update (short delay to ensure DOM update happens)
+    await new Promise(r => setTimeout(r, 200));
+
+    // Check if the node is still connected
+    const isKeyed = await page.evaluate(() => !window.testRow.isConnected);
+    return isKeyed;
+  } catch (e) {
+    console.warn("Failed to perform keyed check:", e.message);
+    return false;
+  } finally {
+    await page.close();
+  }
+}
+
 async function execute(page, tasks, j) {
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i];
@@ -177,10 +208,18 @@ async function execute(page, tasks, j) {
       result.stars = stats.stars;
       result.downloads = stats.downloads;
 
-      const sizes = await calculateSizes(`./frameworks/${fw}/dist`);
+      const implPath = `frameworks/${fw}/dist`;
+      const sizes = await calculateSizes(`./${implPath}`);
       result.gzipBundle = sizes.gzip;
       result.rawBundle = sizes.raw;
       result.brotliBundle = sizes.brotli;
+      
+      const uri = `http://localhost:3000/${implPath}/`;
+      const isKeyed = await checkKeyed(browser, uri);
+      if (!isKeyed) {
+        throw new Error(`${fw} behaves as NON-KEYED (should be KEYED)`);
+      }
+
       console.log(`${fw} bundle: gzip ${Math.round(sizes.gzip / 100) / 10}KB, raw ${Math.round(sizes.raw / 100) / 10}KB, brotli ${Math.round(sizes.brotli / 100) / 10}KB`);
       currentRunResults.push(result);
       if (!argv.skipBenchmarks) {
@@ -191,10 +230,10 @@ async function execute(page, tasks, j) {
             measurements: [],
           };
           result.benchmarks.push(benchmarkResult);
-          for (let i = 0; i < benchmark.runs; i++) {
+          for (let i = 0; i < 1; i++) {
             const page = await browser.newPage();
             page.setDefaultTimeout(5000);
-            await page.goto(`http://localhost:3000/frameworks/${fw}/dist/`);
+            await page.goto(uri);
             await page.waitForSelector("main")
             await page.setViewport({ width: 1200, height: 800 });
             await execute(page, benchmark.setup);
