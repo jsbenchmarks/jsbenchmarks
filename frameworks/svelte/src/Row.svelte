@@ -4,11 +4,10 @@
     getLengthConversion,
     getPowerConversion,
     getWeightConversion,
-    rows,
     selected,
-    unitSystem,
+    unitSystem
   } from "./state.svelte";
-  const { row } = $props();
+  const { row, remove } = $props();
 </script>
 
 <tr
@@ -39,7 +38,7 @@
       class="small"
       onclick={(e) => {
         e.stopPropagation();
-        rows.value = rows.value.filter((r) => r.id !== row.id);
+        remove(row);
       }}
     >
       delete
