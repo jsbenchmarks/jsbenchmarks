@@ -1,0 +1,44 @@
+.App-main {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.App-header {
+  margin-bottom: 2rem;
+}
+
+.App-h1 {
+  font-size: 2em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  color: #fff;
+}
+
+.App-header-info {
+  color: #8b949e;
+}
+
+.App-p {
+  line-height: 1.6;
+  margin-bottom: 0.5em;
+  color: #8b949e;
+}
+
+.App-link {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.App-link:hover {
+  text-decoration: underline;
+}
+
+.App-h2 {
+  font-size: 1.5em;
+  margin-bottom: 1em;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3em;
+}

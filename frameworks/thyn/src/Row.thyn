@@ -1,0 +1,56 @@
+<script>
+  import {unitmap} from "common/data.js";
+  import {
+    data,
+    selected,
+    unitSystem,
+    lengthConversion,
+    powerConversion,
+    weightConversion,
+  } from "./state.thyn.js";
+
+  const {row} = $props;
+  const {
+    id,
+    name,
+    weight,
+    dimensions: {
+      height,
+      width,
+      depth,
+    },
+    powerConsumption,
+    price,
+    availabilityStatus,
+    rating,
+  } = row;
+</script>
+
+<tr class={selected() === id ? 'selected' : undefined} onclick={() => selected(s => s === id ? null : id)}>
+  <td>{{ id }}</td>
+  <td>{{ name }}</td>
+  <td>
+    {{ (weight * weightConversion()).toFixed(1) }}
+    {{ unitmap.weight[unitSystem()] }}
+  </td>
+  <td>
+    {{ (height * lengthConversion()).toFixed(1) }}
+    x
+    {{ (width * lengthConversion()).toFixed(1) }}
+    x
+    {{ (depth * lengthConversion()).toFixed(1) }}
+    {{ unitmap.length[unitSystem()] }}
+  </td>
+  <td>
+    {{ (powerConsumption * powerConversion()).toFixed(1) }}
+    {{ unitmap.power[unitSystem()] }}
+  </td>
+  <td>${{ price().toFixed(2) }}</td>
+  <td>{{ availabilityStatus() }}</td>
+  <td>{{ rating.toFixed(1) }}</td>
+  <td>
+    <button class="small" onclick.stop={() => data(old => old.filter(r => r.id !== id))}>
+      Delete
+    </button>
+  </td>
+</tr>

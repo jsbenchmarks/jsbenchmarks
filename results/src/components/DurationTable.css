@@ -1,0 +1,116 @@
+.DurationTable-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.DurationTable-table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.DurationTable-table thead {
+  background-color: var(--table-header-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.DurationTable-th, .DurationTable-td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.DurationTable-th {
+  color: #fff;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.DurationTable-sortable {
+  cursor: pointer;
+}
+
+.DurationTable-sortable:hover {
+  background-color: var(--row-hover-bg);
+}
+
+.DurationTable-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.DurationTable-sticky-col {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--bg-color);
+  border-right: 1px solid var(--border-color);
+  width: 1%;
+}
+
+.DurationTable-table thead .DurationTable-sticky-col {
+  background-color: var(--table-header-bg);
+  z-index: 11;
+}
+
+.DurationTable-td {
+  text-align: right;
+  white-space: nowrap;
+  color: #c9d1d9;
+  font-weight: bold;
+}
+
+.DurationTable-td:last-child, .DurationTable-th:last-child {
+  border-right: none;
+}
+
+.DurationTable-tr:last-child .DurationTable-td {
+  border-bottom: none;
+}
+
+.DurationTable-tr:hover .DurationTable-td {
+  background-color: var(--row-hover-bg);
+}
+
+.DurationTable-tr:hover .DurationTable-td.DurationTable-sticky-col {
+  background-color: #161b22;
+}
+
+.DurationTable-td[style*="oklch"] {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.DurationTable-link {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.DurationTable-link:hover {
+  text-decoration: underline;
+}
+
+.DurationTable-version {
+  margin-left: 0.5rem;
+  opacity: 0.6;
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+.DurationTable-name-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

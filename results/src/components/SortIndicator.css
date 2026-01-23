@@ -1,0 +1,15 @@
+.SortIndicator-icon {
+  display: inline-block;
+  margin-left: 8px;
+  width: 12px;
+  text-align: center;
+  font-size: 1em;
+}
+
+.SortIndicator-inactive {
+  opacity: 0.4;
+}
+
+.SortIndicator-active {
+  color: var(--link-color);
+}

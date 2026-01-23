@@ -1,0 +1,116 @@
+.MemoryTable-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.MemoryTable-table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.MemoryTable-table thead {
+  background-color: var(--table-header-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.MemoryTable-th, .MemoryTable-td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.MemoryTable-th {
+  color: #fff;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.MemoryTable-sortable {
+  cursor: pointer;
+}
+
+.MemoryTable-sortable:hover {
+  background-color: var(--row-hover-bg);
+}
+
+.MemoryTable-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.MemoryTable-sticky-col {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--bg-color);
+  border-right: 1px solid var(--border-color);
+  width: 1%;
+}
+
+.MemoryTable-table thead .MemoryTable-sticky-col {
+  background-color: var(--table-header-bg);
+  z-index: 11;
+}
+
+.MemoryTable-td {
+  text-align: right;
+  white-space: nowrap;
+  color: #c9d1d9;
+  font-weight: bold;
+}
+
+.MemoryTable-td:last-child, .MemoryTable-th:last-child {
+  border-right: none;
+}
+
+.MemoryTable-tr:last-child .MemoryTable-td {
+  border-bottom: none;
+}
+
+.MemoryTable-tr:hover .MemoryTable-td {
+  background-color: var(--row-hover-bg);
+}
+
+.MemoryTable-tr:hover .MemoryTable-td.MemoryTable-sticky-col {
+  background-color: #161b22;
+}
+
+.MemoryTable-td[style*="oklch"] {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.MemoryTable-link {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.MemoryTable-link:hover {
+  text-decoration: underline;
+}
+
+.MemoryTable-version {
+  margin-left: 0.5rem;
+  opacity: 0.6;
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+.MemoryTable-name-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

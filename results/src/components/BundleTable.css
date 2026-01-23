@@ -1,0 +1,116 @@
+.BundleTable-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.BundleTable-table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.BundleTable-table thead {
+  background-color: var(--table-header-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.BundleTable-th, .BundleTable-td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.BundleTable-th {
+  color: #fff;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.BundleTable-sortable {
+  cursor: pointer;
+}
+
+.BundleTable-sortable:hover {
+  background-color: var(--row-hover-bg);
+}
+
+.BundleTable-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.BundleTable-sticky-col {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--bg-color);
+  border-right: 1px solid var(--border-color);
+  width: 1%;
+}
+
+.BundleTable-table thead .BundleTable-sticky-col {
+  background-color: var(--table-header-bg);
+  z-index: 11;
+}
+
+.BundleTable-td {
+  text-align: right;
+  white-space: nowrap;
+  color: #c9d1d9;
+  font-weight: bold;
+}
+
+.BundleTable-td:last-child, .BundleTable-th:last-child {
+  border-right: none;
+}
+
+.BundleTable-tr:last-child .BundleTable-td {
+  border-bottom: none;
+}
+
+.BundleTable-tr:hover .BundleTable-td {
+  background-color: var(--row-hover-bg);
+}
+
+.BundleTable-tr:hover .BundleTable-td.BundleTable-sticky-col {
+  background-color: #161b22;
+}
+
+.BundleTable-td[style*="oklch"] {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.BundleTable-link {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.BundleTable-link:hover {
+  text-decoration: underline;
+}
+
+.BundleTable-version {
+  margin-left: 0.5rem;
+  opacity: 0.6;
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+.BundleTable-name-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

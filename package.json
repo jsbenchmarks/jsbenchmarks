@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "scripts": {
+    "bench": "node start.js",
+    "serve": "serve",
+    "build-frameworks": "for d in frameworks/*; do (cd \"$d\" && npm run build); done"
+  },
+  "dependencies": {
+    "esprima": "^4.0.1",
+    "glob": "^11.0.2",
+    "puppeteer": "^24.9.0",
+    "serve": "^14.2.4",
+    "yargs": "^18.0.0"
+  }
+}

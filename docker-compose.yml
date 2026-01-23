@@ -1,0 +1,8 @@
+services:
+  server:
+    build: .
+    container_name: jsbenchmarks
+    network_mode: "host"
+    volumes:
+      - ./results/dist:/app/assets
+    restart: unless-stopped

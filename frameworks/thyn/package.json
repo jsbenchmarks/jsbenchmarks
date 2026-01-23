@@ -1,0 +1,20 @@
+{
+  "name": "thyn",
+  "jsbenchmarks": {
+    "website": "https://thyn.dev",
+    "package": "@thyn/core"
+  },
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "@thyn/core": "^0.0.312",
+    "@thyn/vite-plugin": "^0.0.312"
+  }
+}
