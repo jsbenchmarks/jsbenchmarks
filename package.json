@@ -3,7 +3,7 @@
   "scripts": {
     "bench": "node start.js",
     "serve": "serve",
-    "build-frameworks": "for d in frameworks/*; do (cd \"$d\" && npm run build); done"
+    "build-frameworks": "for d in frameworks/*; do (cd \"$d\" && npm i && npm run build); done"
   },
   "dependencies": {
     "esprima": "^4.0.1",
