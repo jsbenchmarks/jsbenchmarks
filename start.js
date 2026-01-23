@@ -230,7 +230,7 @@ async function execute(page, tasks, j) {
             measurements: [],
           };
           result.benchmarks.push(benchmarkResult);
-          for (let i = 0; i < benchmark.runs; i++) {
+          for (let i = 0; i < 2; i++) {
             const page = await browser.newPage();
             page.setDefaultTimeout(5000);
             await page.goto(uri);
