@@ -26,7 +26,15 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => {
+          const rows = document.querySelectorAll("tbody tr");
+          if (rows.length === 1000) {
+            window.lastFirstID = rows[0].querySelector("td").textContent;
+            window.lastLastID = rows[rows.length - 1].querySelector("td").textContent;
+            return true;
+          }
+          return false;
+        },
       },
     ],
     warmup: [
@@ -38,7 +46,13 @@ export const benchmarks = [
     measure: [
       {
         click: "#create",
-        done: () => document.querySelector("tbody tr td").textContent.length === 4,
+        done: () => {
+          const rows = document.querySelectorAll("tbody tr");
+          if (rows.length < 1000) return false;
+          const first = rows[0].querySelector("td").textContent;
+          const last = rows[rows.length - 1].querySelector("td").textContent;
+          return first !== window.lastFirstID && last !== window.lastLastID && first.length === 4;
+        },
       },
     ],
   },
