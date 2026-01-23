@@ -2,72 +2,65 @@
   import { buildData } from "../../../common/data";
   import Row from "./Row.svelte";
 
-  import { rows, unitSystem } from "./state.svelte";
+  import { unitSystem } from "./state.svelte";
+
+  let rows = $state.raw([]);
+
+  function remove(row) {
+    rows = rows.filter((r) => r !== row);
+  }
 </script>
 
 <main>
   <div class="header">
     <h1>Svelte</h1>
     <div class="actions">
-      <button id="create" onclick={() => (rows.value = buildData(1000))}
+      <button id="create" onclick={() => (rows = buildData(1000))}
         >Create</button
       >
-      <button
-        id="reverse"
-        onclick={() => (rows.value = rows.value.toReversed())}>Reverse</button
-      >
+      <button id="reverse" onclick={() => (rows = rows.toReversed())}>Reverse</button>
       <button
         id="insert"
         onclick={() =>
-          (rows.value = [
-            ...rows.value.slice(0, 10),
-            ...buildData(1),
-            ...rows.value.slice(10),
-          ])}>Insert</button
+          (rows = [...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)])}
+        >Insert</button
       >
-      <button
-        id="prepend"
-        onclick={() => (rows.value = [...buildData(1), ...rows.value])}
+      <button id="prepend" onclick={() => (rows = [...buildData(1), ...rows])}
         >Prepend</button
       >
-      <button
-        id="append"
-        onclick={() => (rows.value = [...rows.value, ...buildData(1)])}
+      <button id="append" onclick={() => (rows = [...rows, ...buildData(1)])}
         >Append</button
       >
       <button
         id="sort"
         onclick={() =>
-          (rows.value = rows.value.toSorted((a, b) =>
-            a.name.localeCompare(b.name),
-          ))}>Sort</button
+          (rows = rows.toSorted((a, b) => a.name.localeCompare(b.name)))}
+        >Sort</button
       >
-      <button
-        id="filter"
-        onclick={() => (rows.value = rows.value.filter((d) => d.id % 2))}
+      <button id="filter" onclick={() => (rows = rows.filter((d) => d.id % 2))}
         >Filter</button
       >
       <button
         id="units"
         onclick={() =>
           (unitSystem.value =
-            unitSystem.value === "imperial" ? "metric" : "imperial")}
+            unitSystem.value === 'imperial' ? 'metric' : 'imperial')}
         >Units</button
       >
       <button
         id="restock"
         onclick={() =>
-          (rows.value = rows.value.map((r) =>
-            r.availabilityStatus === "Out of Stock"
-              ? { ...r, availabilityStatus: "In Stock" }
-              : r,
+          (rows = rows.map((r) =>
+            r.availabilityStatus === 'Out of Stock'
+              ? { ...r, availabilityStatus: 'In Stock' }
+              : r
           ))}>Restock</button
       >
-      <button id="clear" onclick={() => (rows.value = [])}>Clear</button>
+      <button id="clear" onclick={() => (rows = [])}>Clear</button>
     </div>
   </div>
 
-  {#if rows.value.length}
+  {#if rows.length}
     <table>
       <thead>
         <tr>
@@ -83,8 +76,8 @@
         </tr>
       </thead>
       <tbody>
-        {#each rows.value as row (row.id)}
-          <Row {row} />
+        {#each rows as row (row.id)}
+          <Row {row} {remove} />
         {/each}
       </tbody>
     </table>
