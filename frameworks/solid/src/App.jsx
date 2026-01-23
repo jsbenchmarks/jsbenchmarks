@@ -1,5 +1,5 @@
 import { buildData as buildRawData } from 'common/data';
-import { createMemo, createSelector, createSignal, For, Show } from 'solid-js';
+import { createSelector, createSignal, For, Show } from 'solid-js';
 import Row from './Row';
 
 function buildData(cnt) {
@@ -14,15 +14,9 @@ export const [rows, setRows] = createSignal([]);
 export const [selected, setSelected] = createSignal(null);
 export const [unitSystem, setUnitSystem] = createSignal('metric');
 
-export const weightConversion = createMemo(() =>
-  unitSystem() === 'metric' ? 1 : 2.20462
-);
-export const powerConversion = createMemo(() =>
-  unitSystem() === 'metric' ? 1 : 0.00134102
-);
-export const lengthConversion = createMemo(() =>
-  unitSystem() === 'metric' ? 1 : 0.393701
-);
+export const weightConversion = () => unitSystem() === 'metric' ? 1 : 2.20462;
+export const powerConversion = () => unitSystem() === 'metric' ? 1 : 0.00134102;
+export const lengthConversion = () => unitSystem() === 'metric' ? 1 : 0.393701;
 
 export const isSelected = createSelector(selected);
 

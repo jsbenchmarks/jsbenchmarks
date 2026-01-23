@@ -54,17 +54,46 @@ export const benchmarks = [
     warmup: [
       {
         click: "#reverse",
-        done: () => {
-          const changed = document.querySelector("td").textContent !== window.td;
-          window.td = document.querySelector("td").textContent;
-          return changed;
+        done: i => {
+          const tds = Array.from(document.querySelectorAll("td:first-child"));
+          if (i % 2 === 0) {
+            for (let j = 0; j < 1000; j++) {
+              const expected = 999 - j;
+              const actual = parseInt(tds[j].textContent, 10);
+              if (actual !== expected) {
+                console.log({ expected, actual });
+                return false;
+              }
+            }
+            return true;
+          }
+          for (let j = 0; j < 1000; j++) {
+            const expected = j;
+            const actual = parseInt(tds[j].textContent, 10);
+            if (actual !== expected) {
+                console.log({ expected, actual });
+              return false;
+            }
+          }
+          return true;
         },
       },
     ],
     measure: [
       {
         click: "#reverse",
-        done: () => document.querySelector("td").textContent.endsWith("999"),
+        done: () => {
+          const tds = document.querySelectorAll("td:first-child");
+          for (let j = 0; j < 1000; j++) {
+            const expected = 1999 - j;
+            const actual = parseInt(tds[j].textContent, 10);
+            if (actual !== expected) {
+                console.log({ expected, actual });
+              return false;
+            }
+          }
+          return true;
+        },
       },
     ],
   },

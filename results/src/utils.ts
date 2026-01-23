@@ -9,8 +9,8 @@ export function color(norm: number): string {
   // [value, hue]
   const points = [
     [1, 140],   // Green
-    [2, 20],    // Red
-    [5, 0],     // Deep Red / Pinkish
+    [1.75, 20],    // Red
+    [3, 0],     // Deep Red / Pinkish
     [7.5, -30], // Magenta
     [10, -60]   // Purple
   ];

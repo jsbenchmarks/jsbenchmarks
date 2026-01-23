@@ -158,6 +158,7 @@ async function execute(page, tasks, j) {
           await new Promise(r => setTimeout(r));
           const start = performance.now();
           await execute(page, benchmark.measure);
+          await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
           const duration = performance.now() - start;
           await page.evaluate(() => window.gc());
           await new Promise(r => setTimeout(r));
