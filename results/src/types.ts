@@ -33,6 +33,9 @@ export interface Result extends RawResult {
   normalRawBundle?: number;
   normalBrotliBundle?: number;
   normalCompositeBundle?: number;
+  normalStars?: number;
+  normalDownloads?: number;
+  normalCompositeStats?: number;
 }
 
 export type SortDirection = 'asc' | 'desc';

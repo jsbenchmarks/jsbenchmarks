@@ -11,8 +11,8 @@ export function color(norm: number): string {
     [1, 140],   // Green
     [1.75, 20],    // Red
     [3, 0],     // Deep Red / Pinkish
-    [7.5, -30], // Magenta
-    [10, -60]   // Purple
+    [7.5, -15], // Magenta
+    [10, -30]   // Purple
   ];
 
   for (let i = 0; i < points.length - 1; i++) {
@@ -44,6 +44,8 @@ export function calculateResults(input: RawResult[]): Result[] {
   let bestGzipBund = 1e12;
   let bestRawBund = 1e12;
   let bestBrotliBund = 1e12;
+  let maxStars = 0;
+  let maxDownloads = 0;
 
   for (const result of results) {
     for (const bm of result.benchmarks) {
@@ -81,6 +83,8 @@ export function calculateResults(input: RawResult[]): Result[] {
     bestGzipBund = Math.min(bestGzipBund, result.gzipBundle);
     bestRawBund = Math.min(bestRawBund, result.rawBundle);
     bestBrotliBund = Math.min(bestBrotliBund, result.brotliBundle);
+    maxStars = Math.max(maxStars, result.stars ?? 0);
+    maxDownloads = Math.max(maxDownloads, result.downloads ?? 0);
   }
 
   for (const result of results) {
@@ -112,6 +116,13 @@ export function calculateResults(input: RawResult[]): Result[] {
     result.normalCompositeBundle = Math.pow(
       result.normalGzipBundle * result.normalRawBundle * result.normalBrotliBundle,
       1 / 3
+    );
+
+    result.normalStars = maxStars / Math.max(1, result.stars ?? 0);
+    result.normalDownloads = maxDownloads / Math.max(1, result.downloads ?? 0);
+    result.normalCompositeStats = Math.pow(
+      result.normalStars * result.normalDownloads,
+      1 / 2
     );
   }
   return results;

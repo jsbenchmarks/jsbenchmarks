@@ -15,7 +15,7 @@ function App() {
   const [memorySort, setMemorySort] = useState<SortConfig<string>>({ key: COMPOSITE_NAME, dir: 'asc' });
 
   const [bundleSort, setBundleSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeBundle', dir: 'asc' });
-  const [statsSort, setStatsSort] = useState<SortConfig<keyof Result>>({ key: 'stars', dir: 'desc' });
+  const [statsSort, setStatsSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeStats', dir: 'asc' });
 
   const baseRows = useMemo(() => calculateResults(inputData), []);
 
@@ -43,7 +43,7 @@ function App() {
   const handleStatsSort = (key: keyof Result) => {
     setStatsSort(prev => ({
       key,
-      dir: prev.key === key && prev.dir === 'desc' ? 'asc' : 'desc'
+      dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc'
     }));
   };
 

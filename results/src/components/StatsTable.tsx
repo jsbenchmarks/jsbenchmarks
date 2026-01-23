@@ -1,6 +1,7 @@
 import type { Result, SortConfig } from '../types';
-import './StatsTable.css';
+import { COMPOSITE_NAME, color } from '../utils';
 import { SortIndicator } from './SortIndicator';
+import './StatsTable.css';
 
 interface StatsTableProps {
   rows: Result[];
@@ -26,15 +27,21 @@ export const StatsTable = ({ rows, sortConfig, onSort }: StatsTableProps) => {
         <thead>
           <tr>
             <th className="StatsTable-th StatsTable-sticky-col"></th>
+            <th className="StatsTable-th StatsTable-sortable" onClick={() => onSort('normalCompositeStats')}>
+              <div className="StatsTable-header-content">
+                {COMPOSITE_NAME}
+                <SortIndicator active={sortConfig.key === 'normalCompositeStats'} dir={sortConfig.dir} />
+              </div>
+            </th>
             <th className="StatsTable-th StatsTable-sortable" onClick={() => onSort('stars')}>
               <div className="StatsTable-header-content">
-                Stars
+                github stars
                 <SortIndicator active={sortConfig.key === 'stars'} dir={sortConfig.dir} />
               </div>
             </th>
             <th className="StatsTable-th StatsTable-sortable" onClick={() => onSort('downloads')}>
               <div className="StatsTable-header-content">
-                Weekly Downloads
+                weekly npm downloads
                 <SortIndicator active={sortConfig.key === 'downloads'} dir={sortConfig.dir} />
               </div>
             </th>
@@ -57,10 +64,13 @@ export const StatsTable = ({ rows, sortConfig, onSort }: StatsTableProps) => {
                   {row.version && <span className="StatsTable-version">v{row.version}</span>}
                 </div>
               </td>
-              <td className="StatsTable-td">
+              <td className="StatsTable-td" style={{ color: color(row.normalCompositeStats!) }}>
+                {row.normalCompositeStats?.toFixed(2)}
+              </td>
+              <td className="StatsTable-td" style={{ color: color(row.normalStars!) }}>
                 {formatNumber(row.stars)}
               </td>
-              <td className="StatsTable-td">
+              <td className="StatsTable-td" style={{ color: color(row.normalDownloads!) }}>
                 {formatNumber(row.downloads)}
               </td>
             </tr>
