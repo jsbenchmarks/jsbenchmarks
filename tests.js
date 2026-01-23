@@ -38,7 +38,7 @@ export const benchmarks = [
     measure: [
       {
         click: "#create",
-        done: () => document.querySelector("tbody tr td").textContent.length === 4,
+        done: () => document.querySelector("tbody tr td").textContent === "7000" && document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
   },
