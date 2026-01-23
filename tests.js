@@ -215,7 +215,7 @@ export const benchmarks = [
   },
   {
     runs: 16,
-    name: "splice",
+    name: "insert",
     setup: [
       {
         click: "#create",
@@ -224,13 +224,13 @@ export const benchmarks = [
     ],
     warmup: [
       {
-        click: "#splice",
+        click: "#insert",
         done: i => document.querySelectorAll("tbody tr").length === 1001 + i,
       },
     ],
     measure: [
       {
-        click: "#splice",
+        click: "#insert",
         done: () => document.querySelectorAll("tbody tr").length === 1001,
       },
     ],

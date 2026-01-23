@@ -28,11 +28,11 @@ function App() {
         <div class="actions">
           <button id="create" onClick={() => setRows(buildData(1000))}>Create</button>
           <button id="reverse" onClick={() => setRows([...rows()].toReversed())}>Reverse</button>
-          <button id="splice" onClick={() => setRows([
+          <button id="insert" onClick={() => setRows([
             ...rows().slice(0, 10),
             ...buildData(1),
             ...rows().slice(10),
-          ])}>Splice</button>
+          ])}>Insert</button>
           <button id="prepend" onClick={() => setRows([...buildData(1), ...rows()])}>Prepend</button>
           <button id="append" onClick={() => setRows([...rows(), ...buildData(1)])}>Append</button>
           <button id="sort" onClick={() => setRows([...rows()].toSorted((a, b) => a.name.localeCompare(b.name)))}>Sort</button>

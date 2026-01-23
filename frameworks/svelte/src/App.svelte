@@ -17,13 +17,13 @@
         onclick={() => (rows.value = rows.value.toReversed())}>Reverse</button
       >
       <button
-        id="splice"
+        id="insert"
         onclick={() =>
           (rows.value = [
             ...rows.value.slice(0, 10),
             ...buildData(1),
             ...rows.value.slice(10),
-          ])}>Splice</button
+          ])}>Insert</button
       >
       <button
         id="prepend"

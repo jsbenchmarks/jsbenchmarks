@@ -14,7 +14,7 @@ import { RowComponent } from './row.component';
         <div class="actions">
           <button id="create" (click)="create()">Create</button>
           <button id="reverse" (click)="reverse()">Reverse</button>
-          <button id="splice" (click)="splice()">Splice</button>
+          <button id="insert" (click)="insert()">Insert</button>
           <button id="prepend" (click)="prepend()">Prepend</button>
           <button id="append" (click)="append()">Append</button>
           <button id="sort" (click)="sort()">Sort</button>
@@ -79,7 +79,7 @@ export class AppComponent {
     this.rows.update(rows => [...rows].reverse());
   }
 
-  splice() {
+  insert() {
     this.rows.update(rows => [...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)]);
   }
 

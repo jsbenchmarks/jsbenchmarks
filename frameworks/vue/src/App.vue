@@ -5,8 +5,8 @@
       <div class="actions">
         <button id="create" @click="() => rows = buildData(1000)">Create</button>
         <button id="reverse" @click="() => rows = rows.toReversed()">Reverse</button>
-        <button id="splice"
-          @click="() => rows = [...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)]">Splice</button>
+        <button id="insert"
+          @click="() => rows = [...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)]">Insert</button>
         <button id="prepend" @click="() => rows = [...buildData(1), ...rows]">Prepend</button>
         <button id="append" @click="() => rows = [...rows, ...buildData(1)]">Append</button>
         <button id="sort" @click="() => rows = rows.toSorted((a, b) => a.name.localeCompare(b.name))">Sort</button>

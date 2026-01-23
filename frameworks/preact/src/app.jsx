@@ -26,7 +26,7 @@ export function App() {
           <button id="create" onClick={() => (rows.value = buildData(1000))}>Create</button>
           <button id="reverse" onClick={() => (rows.value = [...rows.value].toReversed())}>Reverse</button>
           <button
-            id="splice"
+            id="insert"
             onClick={() =>
               (rows.value = [
                 ...rows.value.slice(0, 10),
@@ -35,7 +35,7 @@ export function App() {
               ])
             }
           >
-            Splice
+            Insert
           </button>
           <button id="prepend" onClick={() => (rows.value = [...buildData(1), ...rows.value])}>Prepend</button>
           <button id="append" onClick={() => (rows.value = [...rows.value, ...buildData(1)])}>Append</button>

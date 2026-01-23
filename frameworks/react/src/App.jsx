@@ -29,10 +29,10 @@ export default function App() {
         <div className="actions">
           <button id="create" onClick={() => setRows(buildData(1000))}>Create</button>
           <button id="reverse" onClick={() => setRows([...rows].toReversed())}>Reverse</button>
-          <button id="splice" onClick={() =>
+          <button id="insert" onClick={() =>
             setRows([...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)])
           }>
-            Splice
+            Insert
           </button>
           <button id="prepend" onClick={() => setRows([...buildData(1), ...rows])}>
             Prepend
