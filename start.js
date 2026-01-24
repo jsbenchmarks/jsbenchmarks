@@ -122,6 +122,128 @@ async function execute(page, tasks, j) {
   }
 }
 
+async function waitForTwoRafs(page) {
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve))
+      )
+  );
+}
+
+function resolveNth(selector, j) {
+  if (j === undefined) return selector;
+  return selector.replace(/__nth__/g, `${j + 1}`);
+}
+
+async function installBenchStartListener(page) {
+  await page.evaluate(() => {
+    window.__bench = {
+      tStart: 0,
+      tDone: 0,
+      tEnd: 0,
+      _scheduled: false,
+      _doneSrc: "",
+      _doneFn: null,
+    };
+
+    const bench = window.__bench;
+    function handler(e) {
+      try {
+        if (bench.tStart) return;
+        bench.tStart = performance.now();
+        document.removeEventListener("click", handler, true);
+      } catch {
+        // Ignore unexpected event/DOM errors.
+      }
+    }
+
+    document.addEventListener("click", handler, true);
+  });
+}
+
+async function waitForPaintAfterDone(page, done, j) {
+  const doneSelector = typeof done === "string" ? done : null;
+  const doneSrc = typeof done === "function" ? done.toString() : "";
+
+  await page.waitForFunction(
+    (selector, src, arg) => {
+      const bench = window.__bench;
+      if (!bench) return false;
+      if (bench.tEnd) return true;
+
+      let ok = false;
+      if (selector) {
+        ok = !!document.querySelector(selector);
+      } else {
+        if (bench._doneSrc !== src) {
+          bench._doneSrc = src;
+          bench._doneFn = null;
+        }
+        if (!bench._doneFn) {
+          // eslint-disable-next-line no-eval
+          bench._doneFn = (0, eval)(`(${src})`);
+        }
+        ok = !!bench._doneFn(arg);
+      }
+
+      if (ok && !bench._scheduled) {
+        bench._scheduled = true;
+        bench.tDone = bench.tDone || performance.now();
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            bench.tEnd = performance.now();
+          })
+        );
+      }
+
+      return !!bench.tEnd;
+    },
+    { polling: "raf" },
+    doneSelector,
+    doneSrc,
+    j
+  );
+}
+
+async function executeMeasured(page, tasks, j) {
+  if (!tasks.length) {
+    return 0;
+  }
+
+  const resolvedTasks = tasks.map((t) => ({
+    click: resolveNth(t.click, j),
+    done: typeof t.done === "string" ? resolveNth(t.done, j) : t.done,
+  }));
+
+  await installBenchStartListener(page);
+
+  for (let i = 0; i < resolvedTasks.length; i++) {
+    const task = resolvedTasks[i];
+    await page.click(task.click);
+
+    const isLast = i === resolvedTasks.length - 1;
+    if (!isLast) {
+      if (typeof task.done === "string") {
+        await page.waitForSelector(task.done);
+      } else {
+        await page.waitForFunction(task.done, {}, j);
+      }
+      continue;
+    }
+
+    await waitForPaintAfterDone(page, task.done, j);
+  }
+
+  const duration = await page.evaluate(() => {
+    const bench = window.__bench;
+    if (!bench || !bench.tStart || !bench.tEnd) return 0;
+    return bench.tEnd - bench.tStart;
+  });
+
+  return duration;
+}
+
 (async () => {
   const start = performance.now();
   const argv = yargs(hideBin(process.argv))
@@ -235,26 +357,24 @@ async function execute(page, tasks, j) {
           };
           result.benchmarks.push(benchmarkResult);
           for (let i = 0; i < (argv.runs || benchmark.runs); i++) {
-            const page = await browser.newPage();
+           const page = await browser.newPage();
             page.setDefaultTimeout(5000);
-            await page.goto(uri);
-            await page.waitForSelector("main")
             await page.setViewport({ width: 1200, height: 800 });
+            await page.goto(uri, { waitUntil: "load" });
+            await page.waitForSelector("main");
             await execute(page, benchmark.setup);
             for (let j = 0; j < 5; j++) {
               await execute(page, benchmark.warmup, j);
             }
             await page.click("#clear");
-            await page.waitForSelector("h2");
+            await page.waitForFunction(() => document.querySelectorAll("tbody tr").length === 0);
+            await waitForTwoRafs(page);
             await execute(page, benchmark.setup);
             await page.evaluate(() => window.gc());
-            await new Promise(r => setTimeout(r));
-            const start = performance.now();
-            await execute(page, benchmark.measure);
-            await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-            const duration = performance.now() - start;
+            await new Promise(r => setTimeout(r, 100));
+            const duration = await executeMeasured(page, benchmark.measure);
             await page.evaluate(() => window.gc());
-            await new Promise(r => setTimeout(r));
+            await new Promise(r => setTimeout(r, 100));
             const memory = await page.evaluate(() => performance.memory.usedJSHeapSize);
             benchmarkResult.measurements.push({ duration, memory });
             console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB" });

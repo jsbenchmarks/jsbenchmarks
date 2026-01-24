@@ -6,17 +6,17 @@ export const benchmarks = [
     warmup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
       {
         click: "#clear",
-        done: "h2",
+        done: () => document.querySelectorAll("tbody tr").length === 0,
       },
     ],
     measure: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
   },
@@ -26,7 +26,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -48,7 +48,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -103,7 +103,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -121,7 +121,7 @@ export const benchmarks = [
       },
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     measure: [
@@ -145,23 +145,23 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
       {
         click: "#clear",
-        done: "h2",
+        done: () => document.querySelectorAll("tbody tr").length === 0,
       },
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     measure: [
       {
         click: "#clear",
-        done: "h2",
+        done: () => document.querySelectorAll("tbody tr").length === 0,
       },
     ],
   },
@@ -181,7 +181,7 @@ export const benchmarks = [
       },
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     measure: [
@@ -197,7 +197,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -219,7 +219,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -241,7 +241,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -263,7 +263,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -285,7 +285,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -307,7 +307,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -329,7 +329,7 @@ export const benchmarks = [
     setup: [
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     warmup: [
@@ -342,7 +342,7 @@ export const benchmarks = [
       },
       {
         click: "#create",
-        done: "table",
+        done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
     measure: [
