@@ -139,6 +139,10 @@ async function execute(page, tasks, j) {
       type: "boolean",
       description: "Skip running benchmarks, only update stats and sizes",
     })
+    .option("runs", {
+      type: "number",
+      description: "Number of runs to perform",
+    })
     .help()
     .alias("help", "h")
     .argv;
@@ -230,7 +234,7 @@ async function execute(page, tasks, j) {
             measurements: [],
           };
           result.benchmarks.push(benchmarkResult);
-          for (let i = 0; i < benchmark.runs; i++) {
+          for (let i = 0; i < (argv.runs || benchmark.runs); i++) {
             const page = await browser.newPage();
             page.setDefaultTimeout(5000);
             await page.goto(uri);
