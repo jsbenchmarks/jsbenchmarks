@@ -3,10 +3,14 @@ import { buildData as buildRawData, unitmap } from 'common/data';
 
 function createData(count) {
   const data = buildRawData(count);
+  let row;
+
   for (let i = 0; i < data.length; i++) {
-    data[i].availabilityStatus = track(data[i].availabilityStatus);
+    row = data[i];
+    row.availabilityStatus = track(row.availabilityStatus);
   }
-  return data;
+
+  return count === 1 ? row : data;
 }
 
 export component App() {
