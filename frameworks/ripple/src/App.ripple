@@ -2,10 +2,11 @@ import { track } from 'ripple';
 import { buildData as buildRawData, unitmap } from 'common/data';
 
 function createData(count) {
-  return buildRawData(count).map(row => ({
-    ...row,
-    availabilityStatus: track(row.availabilityStatus)
-  }));
+  const data = buildRawData(count);
+  for (let i = 0; i < data.length; i++) {
+    data[i].availabilityStatus = track(data[i].availabilityStatus);
+  }
+  return data;
 }
 
 export component App() {
