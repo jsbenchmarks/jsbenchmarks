@@ -1,248 +1,255 @@
-import { buildData } from 'common/data';
+import { buildData, unitmap } from "common/data";
 
-let selected = null;
-let unitSystem = 'metric';
+let selectedTr = null;
+let isMetric = true;
 
-const tbody = document.getElementById('tbody');
-const table = document.querySelector('table');
-const noRowsMsg = document.getElementById('no-rows-msg');
+const table = document.querySelector("table");
+let tbody = document.querySelector("tbody");
+const noRowsMsg = document.getElementById("no-rows-msg");
 
-// Cache Node methods for slightly faster access in tight loops
-const { cloneNode } = Node.prototype;
-const clone = n => cloneNode.call(n, true);
+let hasRows = null;
+function setHasRows(next) {
+  if (next === hasRows) return;
+  hasRows = next;
+  if (next) {
+    noRowsMsg.style.display = "none";
+    table.style.display = "table";
+  } else {
+    noRowsMsg.style.display = "block";
+    table.style.display = "none";
+  }
+}
 
-// --- Templates & Helpers ---
+// Row template: keep text nodes as firstChild for fast updates.
+const rowTemplate = document.createElement("template");
+rowTemplate.innerHTML =
+  "<tr>" +
+  "<td> </td>" +
+  "<td> </td>" +
+  "<td> </td>" +
+  "<td> </td>" +
+  "<td> </td>" +
+  "<td> </td>" +
+  "<td> </td>" +
+  "<td> </td>" +
+  '<td><button class=\"small delete-btn\">delete</button></td>' +
+  "</tr>";
 
-const trTemplate = document.createElement('tr');
-trTemplate.innerHTML = `
-  <td class="col-id"> </td>
-  <td class="col-name"> </td>
-  <td class="col-weight"> </td>
-  <td class="col-dims"> </td>
-  <td class="col-power"> </td>
-  <td class="col-price"> </td>
-  <td class="col-status"> </td>
-  <td class="col-rating"> </td>
-  <td class="col-actions">
-    <button class="small delete-btn">delete</button>
-  </td>
-`;
+const rowProto = rowTemplate.content.firstElementChild;
 
-function createRowElement(row) {
-  const tr = clone(trTemplate);
-  tr._data = row;
-  
-  // Cache text node references for fast updates
-  const cells = tr.cells;
-  tr._nodes = {
-    id: cells[0].firstChild,
-    name: cells[1].firstChild,
-    weight: cells[2].firstChild,
-    dims: cells[3].firstChild,
-    power: cells[4].firstChild,
-    price: cells[5].firstChild,
-    status: cells[6].firstChild,
-    rating: cells[7].firstChild
-  };
-  
-  // Pre-compute both unit formats (eliminates toFixed on toggle)
-  const h = row.dimensions.height, w = row.dimensions.width, d = row.dimensions.depth;
-  tr._fmt = {
-    metric: {
-      weight: row.weight.toFixed(1) + ' kg',
-      dims: h.toFixed(1) + ' x ' + w.toFixed(1) + ' x ' + d.toFixed(1) + ' cm',
-      power: row.powerConsumption.toFixed(1) + ' w'
-    },
-    imperial: {
-      weight: (row.weight * 2.20462).toFixed(1) + ' lbs',
-      dims: (h * 0.393701).toFixed(1) + ' x ' + (w * 0.393701).toFixed(1) + ' x ' + (d * 0.393701).toFixed(1) + ' in',
-      power: (row.powerConsumption * 0.00134102).toFixed(1) + ' hp'
-    }
-  };
-  
-  // Set initial content using cached format
-  const n = tr._nodes, fmt = tr._fmt[unitSystem];
-  n.id.data = row.id;
-  n.name.data = row.name;
-  n.weight.data = fmt.weight;
-  n.dims.data = fmt.dims;
-  n.power.data = fmt.power;
-  n.price.data = '$' + row.price.toFixed(2);
-  n.status.data = row.availabilityStatus;
-  n.rating.data = row.rating.toFixed(1);
-  
+function createRow(row) {
+  const tr = rowProto.cloneNode(true);
+  const c = tr.children;
+
+  const idNode = c[0].firstChild;
+  const nameNode = c[1].firstChild;
+  const weightNode = c[2].firstChild;
+  const dimsNode = c[3].firstChild;
+  const powerNode = c[4].firstChild;
+  const priceNode = c[5].firstChild;
+  const statusNode = c[6].firstChild;
+  const ratingNode = c[7].firstChild;
+
+  // Cache only what the benchmarks need after creation.
+  tr._id = row.id;
+  tr._name = row.name;
+  tr._status = row.availabilityStatus;
+  tr._w = weightNode;
+  tr._d = dimsNode;
+  tr._p = powerNode;
+  tr._s = statusNode;
+
+  // Precompute both unit formats so toggling is just swapping strings.
+  const dim = row.dimensions;
+  const h = dim.height;
+  const w = dim.width;
+  const d = dim.depth;
+
+  const mw = row.weight.toFixed(1) + " " + unitmap.weight.metric;
+  const md =
+    h.toFixed(1) +
+    " x " +
+    w.toFixed(1) +
+    " x " +
+    d.toFixed(1) +
+    " " +
+    unitmap.length.metric;
+  const mp = row.powerConsumption.toFixed(1) + " " + unitmap.power.metric;
+
+  const iw = (row.weight * 2.20462).toFixed(1) + " " + unitmap.weight.imperial;
+  const id =
+    (h * 0.393701).toFixed(1) +
+    " x " +
+    (w * 0.393701).toFixed(1) +
+    " x " +
+    (d * 0.393701).toFixed(1) +
+    " " +
+    unitmap.length.imperial;
+  const ip =
+    (row.powerConsumption * 0.00134102).toFixed(1) + " " + unitmap.power.imperial;
+
+  tr._mw = mw;
+  tr._md = md;
+  tr._mp = mp;
+  tr._iw = iw;
+  tr._idim = id;
+  tr._ip = ip;
+
+  idNode.data = row.id;
+  nameNode.data = row.name;
+  if (isMetric) {
+    weightNode.data = mw;
+    dimsNode.data = md;
+    powerNode.data = mp;
+  } else {
+    weightNode.data = iw;
+    dimsNode.data = id;
+    powerNode.data = ip;
+  }
+  priceNode.data = "$" + row.price.toFixed(2);
+  statusNode.data = row.availabilityStatus;
+  ratingNode.data = row.rating.toFixed(1);
+
   return tr;
 }
 
-function setTableVisible(visible) {
-  if (visible) {
-    noRowsMsg.style.display = 'none';
-    table.style.display = 'table';
-  } else {
-    noRowsMsg.style.display = 'block';
-    table.style.display = 'none';
-  }
-}
-
-// --- Specific Actions ---
-
-function run() {
+function create() {
   const rows = buildData(1000);
-  selected = null;
-  tbody.remove();
-  tbody.textContent = '';
-  // Use DocumentFragment for batched DOM insertion
-  const fragment = document.createDocumentFragment();
+  selectedTr = null;
+
+  const nextBody = document.createElement("tbody");
+  nextBody.id = "tbody";
+
   for (let i = 0; i < rows.length; i++) {
-    fragment.appendChild(createRowElement(rows[i]));
+    nextBody.appendChild(createRow(rows[i]));
   }
-  tbody.appendChild(fragment);
-  table.appendChild(tbody);
-  setTableVisible(true);
+
+  table.replaceChild(nextBody, tbody);
+  tbody = nextBody;
+  setHasRows(true);
 }
 
-function add() {
-  const newRows = buildData(1);
-  for (const row of newRows) {
-    tbody.appendChild(createRowElement(row));
-  }
-  setTableVisible(true);
+function append() {
+  const row = buildData(1)[0];
+  tbody.appendChild(createRow(row));
+  setHasRows(true);
 }
 
 function prepend() {
-  const newRows = buildData(1);
-  const firstChild = tbody.firstChild;
-  for (const row of newRows) {
-    tbody.insertBefore(createRowElement(row), firstChild);
-  }
-  setTableVisible(true);
+  const row = buildData(1)[0];
+  const first = tbody.firstChild;
+  if (first) tbody.insertBefore(createRow(row), first);
+  else tbody.appendChild(createRow(row));
+  setHasRows(true);
 }
 
 function insert() {
-  if (tbody.children.length < 10) {
-      add();
-      return;
-  }
-  const newRows = buildData(1);
-  const refNode = tbody.children[10];
-  for (const row of newRows) {
-    tbody.insertBefore(createRowElement(row), refNode);
-  }
-  setTableVisible(true);
-}
-
-function update() {
-  const rows = tbody.children;
-  const len = rows.length;
-  for (let i = 0; i < len; i++) {
-    const tr = rows[i];
-    const data = tr._data;
-    if (data.availabilityStatus === "Out of Stock") {
-      data.availabilityStatus = "In Stock";
-      tr._nodes.status.data = "In Stock";
-    }
-  }
-}
-
-function toggleUnits() {
-  unitSystem = unitSystem === 'imperial' ? 'metric' : 'imperial';
-  
-  const rows = tbody.children;
-  const len = rows.length;
-  
-  for (let i = 0; i < len; i++) {
-    const tr = rows[i];
-    const n = tr._nodes;
-    const fmt = tr._fmt[unitSystem];  // Just swap cached strings!
-    n.weight.data = fmt.weight;
-    n.dims.data = fmt.dims;
-    n.power.data = fmt.power;
-  }
+  const row = buildData(1)[0];
+  const ref = tbody.children[10];
+  if (ref) tbody.insertBefore(createRow(row), ref);
+  else tbody.appendChild(createRow(row));
+  setHasRows(true);
 }
 
 function clear() {
-  tbody.textContent = '';
-  selected = null;
-  setTableVisible(false);
+  tbody.textContent = "";
+  selectedTr = null;
+  setHasRows(false);
 }
 
 function reverse() {
-  const rows = Array.from(tbody.children);
-  tbody.remove();
-  // Use DocumentFragment for batched re-insertion
-  const fragment = document.createDocumentFragment();
-  for (let i = rows.length - 1; i >= 0; i--) {
-    fragment.appendChild(rows[i]);
-  }
-  tbody.appendChild(fragment);
-  table.appendChild(tbody);
+  // Move last->first into a fragment (no arrays).
+  const frag = document.createDocumentFragment();
+  while (tbody.lastChild) frag.appendChild(tbody.lastChild);
+  tbody.appendChild(frag);
 }
 
 function sort() {
-  const rows = Array.from(tbody.children);
-  tbody.remove();
-  
-  // Fast string comparison instead of localeCompare
-  rows.sort((a, b) => {
-    const nameA = a._data.name;
-    const nameB = b._data.name;
-    return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
-  });
-  
-  // Use DocumentFragment for batched re-insertion
-  const fragment = document.createDocumentFragment();
-  for (let i = 0; i < rows.length; i++) {
-    fragment.appendChild(rows[i]);
-  }
-  tbody.appendChild(fragment);
-  table.appendChild(tbody);
+  const len = tbody.children.length;
+  if (len < 2) return;
+
+  const arr = new Array(len);
+  for (let i = 0; i < len; i++) arr[i] = tbody.children[i];
+
+  arr.sort((a, b) => a._name.localeCompare(b._name));
+
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < len; i++) frag.appendChild(arr[i]);
+  tbody.appendChild(frag);
 }
 
 function filter() {
-    let cursor = tbody.lastChild;
-    while (cursor) {
-        const prev = cursor.previousSibling;
-        if (cursor._data.id % 2 === 0) {
-            cursor.remove();
-        }
-        cursor = prev;
-    }
+  let cur = tbody.lastElementChild;
+  while (cur) {
+    const prev = cur.previousElementSibling;
+    if ((cur._id & 1) === 0) cur.remove();
+    cur = prev;
+  }
+  if (!tbody.firstElementChild) setHasRows(false);
 }
 
-// --- Event Delegation ---
-
-tbody.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const target = e.target;
-  const tr = target.closest('tr');
-  if (!tr) return;
-  
-  if (target.classList.contains('delete-btn')) {
-      if (selected === tr) {
-          selected = null;
-      }
-      tr.remove();
-      return;
+function toggleUnits() {
+  isMetric = !isMetric;
+  const rows = tbody.children;
+  if (isMetric) {
+    for (let i = 0; i < rows.length; i++) {
+      const tr = rows[i];
+      tr._w.data = tr._mw;
+      tr._d.data = tr._md;
+      tr._p.data = tr._mp;
+    }
+    return;
   }
-  
-  if (selected) selected.classList.remove('selected');
-  tr.classList.add('selected');
-  selected = tr;
+  for (let i = 0; i < rows.length; i++) {
+    const tr = rows[i];
+    tr._w.data = tr._iw;
+    tr._d.data = tr._idim;
+    tr._p.data = tr._ip;
+  }
+}
+
+function restock() {
+  const rows = tbody.children;
+  for (let i = 0; i < rows.length; i++) {
+    const tr = rows[i];
+    if (tr._status === "Out of Stock") {
+      tr._status = "In Stock";
+      tr._s.data = "In Stock";
+    }
+  }
+}
+
+table.addEventListener("click", (e) => {
+  let target = e.target;
+  if (target && target.nodeType === 3) target = target.parentNode;
+
+  // Fast path: delete button lives at tr > td > button.
+  if (target && target.classList && target.classList.contains("delete-btn")) {
+    const tr = target.parentNode && target.parentNode.parentNode;
+    if (!tr || tr.parentNode !== tbody) return;
+    if (selectedTr === tr) selectedTr = null;
+    tr.remove();
+    if (!tbody.firstElementChild) setHasRows(false);
+    return;
+  }
+
+  const tr = target && target.closest ? target.closest("tr") : null;
+  if (!tr || tr.parentNode !== tbody) return;
+
+  if (selectedTr) selectedTr.classList.remove("selected");
+  tr.classList.add("selected");
+  selectedTr = tr;
 });
 
+document.getElementById("create").onclick = create;
+document.getElementById("reverse").onclick = reverse;
+document.getElementById("insert").onclick = insert;
+document.getElementById("prepend").onclick = prepend;
+document.getElementById("append").onclick = append;
+document.getElementById("sort").onclick = sort;
+document.getElementById("filter").onclick = filter;
+document.getElementById("units").onclick = toggleUnits;
+document.getElementById("restock").onclick = restock;
+document.getElementById("clear").onclick = clear;
 
-// --- Bind Actions ---
-
-document.getElementById('create').onclick = run;
-document.getElementById('reverse').onclick = reverse;
-document.getElementById('insert').onclick = insert;
-document.getElementById('prepend').onclick = prepend;
-document.getElementById('append').onclick = add;
-document.getElementById('sort').onclick = sort;
-document.getElementById('filter').onclick = filter;
-document.getElementById('units').onclick = toggleUnits;
-document.getElementById('restock').onclick = update;
-document.getElementById('clear').onclick = clear;
-
-// Initial state
-setTableVisible(false);
+setHasRows(false);

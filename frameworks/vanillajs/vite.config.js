@@ -1,10 +1,10 @@
 import path from "path";
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
 export default defineConfig({
   resolve: {
     alias: {
-      "common": path.resolve(__dirname, "../../common"),
+      common: path.resolve(__dirname, "../../common"),
     },
   },
   base: "./",

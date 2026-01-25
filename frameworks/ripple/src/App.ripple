@@ -10,7 +10,7 @@ function createData(count) {
     row.availabilityStatus = track(row.availabilityStatus);
   }
 
-  return count === 1 ? row : data;
+  return data;
 }
 
 export component App() {
