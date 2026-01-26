@@ -132,92 +132,50 @@ async function executeMeasured(page, measure) {
   try {
     await fs.promises.unlink(tracePath).catch(() => {});
   } catch (e) {}
-
   await page.tracing.start({
     path: tracePath,
     screenshots: false,
     categories: ['devtools.timeline', 'blink.user_timing', 'latencyInfo', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.frame'],
   });
-
   await page.click(resolveNth(measure.click));
-
   const doneFn = typeof measure.done === "string" ? resolveNth(measure.done) : measure.done;
   if (typeof doneFn === "string") {
     await page.waitForSelector(doneFn);
   } else {
     await page.waitForFunction(doneFn);
   }
-
   await page.evaluate(() => performance.mark("bench-dom-done"));
-
-  // Wait for frame to be presented.
-  // We double-RAF to ensure the browser has a chance to push the frame.
   await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
-  
-  // Add a small buffer to ensure the trace recorder catches the FramePresented event from the GPU thread/compositor
   await new Promise(r => setTimeout(r, 100));
-
   await page.tracing.stop();
-
   const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
   return analyzeTrace(traceData);
 }
 
 function analyzeTrace(trace) {
   const events = trace.traceEvents;
-  
-  // 1. Find the click event (EventDispatch with type 'click')
-  // We want the *start* of the click event dispatch.
   const clickEvent = events.find(e => 
       e.name === 'EventDispatch' && 
       e.args && 
       e.args.data && 
       e.args.data.type === 'click'
   );
-  
   if (!clickEvent) {
       console.warn("Trace analysis: Could not find click event");
-      return 0;
+      return Infinity;
   }
-  
   const clickTime = clickEvent.ts;
-
-  // 2. Find the mark "bench-dom-done"
   const markEvent = events.find(e => 
       e.cat.includes('blink.user_timing') && 
       e.name === 'bench-dom-done'
   );
-
   if (!markEvent) {
       console.warn("Trace analysis: Could not find bench-dom-done mark");
-      return 0;
+      return Infinity;
   }
-
   const domDoneTime = markEvent.ts;
-
-  // 3. Find the next FramePresented after the mark
-  // FramePresented events are often in the 'disabled-by-default-devtools.timeline' category
-  // or just 'devtools.timeline'.
-  // We look for any event that signifies a frame on screen.
-  // 'FramePresented' is the most accurate for "pixels on screen".
-  
-  // Sort events by time just in case, though usually they are roughly ordered.
-  // We filter for FramePresented.
-  const frameEvents = events.filter(e => e.name === 'FramePresented');
-  
-  // Find the first one strictly after domDoneTime
+  const frameEvents = events.filter(e => e.name === 'FramePresented' || e.name === 'AnimationFrame::Presentation');
   let targetFrame = frameEvents.find(e => e.ts >= domDoneTime);
-  
-  if (!targetFrame) {
-      // Fallback: if no FramePresented, maybe look for CompositeLayers or simple End of Trace?
-      // If we waited 100ms+DoubleRaf, there *should* be a frame.
-      // If not, it means no paint was needed? 
-      // console.warn("Trace analysis: Could not find FramePresented after DOM done");
-      // Fallback to domDoneTime? No, that's just when JS finished waiting.
-      return (domDoneTime - clickTime) / 1000;
-  }
-  
-  // Duration in ms (ts is in microseconds)
   return (targetFrame.ts - clickTime) / 1000;
 }
 
@@ -356,13 +314,10 @@ function analyzeTrace(trace) {
             const duration = await executeMeasured(page, benchmark.measure);
             await page.evaluate(() => window.gc());
             await new Promise(r => setTimeout(r, 10));
-            
             const metrics = await page.metrics();
             const memory = metrics.JSHeapUsedSize;
-            const nodeCount = metrics.Nodes;
-
-            result.benchmarks[benchmarkIndex].measurements.push({ duration, memory, nodes: nodeCount });
-            console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB", nodes: nodeCount });
+            result.benchmarks[benchmarkIndex].measurements.push({ duration, memory });
+            console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB" });
           } catch (e) {
             console.error(`Failed to benchmark ${fw} (${benchmark.name}, run ${runIndex + 1}):`, e);
             failed = true;
