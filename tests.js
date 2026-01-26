@@ -13,12 +13,10 @@ export const benchmarks = [
         done: () => document.querySelectorAll("tbody tr").length === 0,
       },
     ],
-    measure: [
-      {
-        click: "#create",
-        done: () => document.querySelectorAll("tbody tr").length === 1000,
-      },
-    ],
+    measure: {
+      click: "#create",
+      done: () => document.querySelectorAll("tbody tr").length === 1000,
+    },
   },
   {
     runs: 16,
@@ -35,12 +33,10 @@ export const benchmarks = [
         done: i => document.querySelector("tbody tr td").textContent === `${(i+1) * 1000}`,
       },
     ],
-    measure: [
-      {
-        click: "#create",
-        done: () => document.querySelector("tbody tr td").textContent === "7000" && document.querySelectorAll("tbody tr").length === 1000,
-      },
-    ],
+    measure: {
+      click: "#create",
+      done: () => document.querySelector("tbody tr td").textContent === "7000" && document.querySelectorAll("tbody tr").length === 1000,
+    },
   },
   {
     runs: 16,
@@ -79,23 +75,21 @@ export const benchmarks = [
         },
       },
     ],
-    measure: [
-      {
-        click: "#reverse",
-        done: () => {
-          const tds = document.querySelectorAll("td:first-child");
-          for (let j = 0; j < 1000; j++) {
-            const expected = 1999 - j;
-            const actual = parseInt(tds[j].textContent, 10);
-            if (actual !== expected) {
-                console.log({ expected, actual });
-              return false;
-            }
+    measure: {
+      click: "#reverse",
+      done: () => {
+        const tds = document.querySelectorAll("td:first-child");
+        for (let j = 0; j < 1000; j++) {
+          const expected = 1999 - j;
+          const actual = parseInt(tds[j].textContent, 10);
+          if (actual !== expected) {
+              console.log({ expected, actual });
+            return false;
           }
-          return true;
-        },
+        }
+        return true;
       },
-    ],
+    },
   },
   {
     runs: 16,
@@ -124,20 +118,18 @@ export const benchmarks = [
         done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
-    measure: [
-      {
-        click: "#sort",
-        done: () => {
-          const names = Array.from(document.querySelectorAll("tr td:nth-of-type(2)")).map(td => td.textContent);
-          return names.every((name, i) => {
-            if (i === names.length - 1) {
-              return true;
-            }
-            return name.localeCompare(names[i + 1]) <= 0;
-          });
-        },
+    measure: {
+      click: "#sort",
+      done: () => {
+        const names = Array.from(document.querySelectorAll("tr td:nth-of-type(2)")).map(td => td.textContent);
+        return names.every((name, i) => {
+          if (i === names.length - 1) {
+            return true;
+          }
+          return name.localeCompare(names[i + 1]) <= 0;
+        });
       },
-    ],
+    },
   },
   {
     runs: 16,
@@ -158,12 +150,10 @@ export const benchmarks = [
         done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
-    measure: [
-      {
-        click: "#clear",
-        done: () => document.querySelectorAll("tbody tr").length === 0,
-      },
-    ],
+    measure: {
+      click: "#clear",
+      done: () => document.querySelectorAll("tbody tr").length === 0,
+    },
   },
   {
     runs: 16,
@@ -184,12 +174,10 @@ export const benchmarks = [
         done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
-    measure: [
-      {
-        click: "#filter",
-        done: () => document.querySelectorAll("tbody tr").length === 500,
-      },
-    ],
+    measure: {
+      click: "#filter",
+      done: () => document.querySelectorAll("tbody tr").length === 500,
+    },
   },
   {
     runs: 16,
@@ -206,12 +194,10 @@ export const benchmarks = [
         done: i => document.querySelectorAll("tbody tr").length === 999 - i,
       },
     ],
-    measure: [
-      {
-        click: "tbody tr:nth-of-type(10) button:nth-of-type(1)",
-        done: () => document.querySelectorAll("tbody tr").length === 999,
-      },
-    ],
+    measure: {
+      click: "tbody tr:nth-of-type(10) button:nth-of-type(1)",
+      done: () => document.querySelectorAll("tbody tr").length === 999,
+    },
   },
   {
     runs: 16,
@@ -228,12 +214,10 @@ export const benchmarks = [
         done: i => document.querySelectorAll("tbody tr").length === 1001 + i,
       },
     ],
-    measure: [
-      {
-        click: "#insert",
-        done: () => document.querySelectorAll("tbody tr").length === 1001,
-      },
-    ],
+    measure: {
+      click: "#insert",
+      done: () => document.querySelectorAll("tbody tr").length === 1001,
+    },
   },
   {
     runs: 16,
@@ -250,12 +234,10 @@ export const benchmarks = [
         done: i => document.querySelectorAll("tbody tr").length === 1001 + i,
       },
     ],
-    measure: [
-      {
-        click: "#prepend",
-        done: () => document.querySelectorAll("tbody tr").length === 1001,
-      },
-    ],
+    measure: {
+      click: "#prepend",
+      done: () => document.querySelectorAll("tbody tr").length === 1001,
+    },
   },
   {
     runs: 16,
@@ -272,12 +254,10 @@ export const benchmarks = [
         done: i => document.querySelectorAll("tbody tr").length === 1001 + i,
       },
     ],
-    measure: [
-      {
-        click: "#append",
-        done: () => document.querySelectorAll("tbody tr").length === 1001,
-      },
-    ],
+    measure: {
+      click: "#append",
+      done: () => document.querySelectorAll("tbody tr").length === 1001,
+    },
   },
   {
     runs: 16,
@@ -294,12 +274,10 @@ export const benchmarks = [
         done: "tbody tr:nth-of-type(__nth__).selected",
       },
     ],
-    measure: [
-      {
-        click: "tbody tr:nth-of-type(10)",
-        done: "tbody tr:nth-of-type(10).selected",
-      },
-    ],
+    measure: {
+      click: "tbody tr:nth-of-type(10)",
+      done: "tbody tr:nth-of-type(10).selected",
+    },
   },
   {
     runs: 16,
@@ -316,12 +294,10 @@ export const benchmarks = [
         done: i => document.querySelector("tbody tr td:nth-of-type(3)").innerText.includes(i % 2 === 0 ? "lbs" : "kg"),
       },
     ],
-    measure: [
-      {
-        click: "#units",
-        done: () => document.querySelector("tbody tr td:nth-of-type(3)").innerText.includes("kg"),
-      },
-    ],
+    measure: {
+      click: "#units",
+      done: () => document.querySelector("tbody tr td:nth-of-type(3)").innerText.includes("kg"),
+    },
   },
   {
     runs: 16,
@@ -345,14 +321,12 @@ export const benchmarks = [
         done: () => document.querySelectorAll("tbody tr").length === 1000,
       },
     ],
-    measure: [
-      {
-        click: "#restock",
-        done: () => {
-          const cells = Array.from(document.querySelectorAll("tbody tr td:nth-of-type(7)"));
-          return cells.length > 0 && cells.every(td => td.textContent !== "Out of Stock");
-        },
+    measure: {
+      click: "#restock",
+      done: () => {
+        const cells = Array.from(document.querySelectorAll("tbody tr td:nth-of-type(7)"));
+        return cells.length > 0 && cells.every(td => td.textContent !== "Out of Stock");
       },
-    ],
+    },
   },
 ];
