@@ -14,6 +14,8 @@ export interface Benchmark {
   memoryMOE?: number;
   normalDuration?: number;
   normalMemory?: number;
+  normalDurationMOE?: number;
+  normalMemoryMOE?: number;
 }
 
 export interface RawResult {

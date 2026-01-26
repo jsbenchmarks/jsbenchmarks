@@ -186,12 +186,10 @@ async function waitForPaintAfterDone(page, done) {
             }
             if (isDone() && !bench._scheduled) {
               bench._scheduled = true;
-              requestAnimationFrame(() =>
-                requestAnimationFrame(() => {
-                  bench.tEnd = performance.now();
-                  resolve(true);
-                })
-              );
+              requestAnimationFrame(() => {
+                bench.tEnd = performance.now();
+                resolve(true);
+              });
               return;
             }
             requestAnimationFrame(tick);
@@ -353,7 +351,7 @@ async function executeMeasured(page, measure) {
             await new Promise(r => setTimeout(r, 100));
             const duration = await executeMeasured(page, benchmark.measure);
             await page.evaluate(() => window.gc());
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise(r => setTimeout(r, 10));
             const memory = await page.evaluate(() => performance.memory.usedJSHeapSize);
             benchmarkResult.measurements.push({ duration, memory });
             console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB" });

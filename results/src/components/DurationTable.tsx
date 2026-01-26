@@ -56,7 +56,7 @@ export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort }: Dura
                 >
                   {bm.duration ? `${bm.duration.toFixed(1)} ± ${bm.durationMOE?.toFixed(1)} ` : ""}
                   {bm.name === COMPOSITE_NAME
-                    ? `${bm.normalDuration?.toFixed(2)}`
+                    ? `${bm.normalDuration?.toFixed(2)}${bm.normalDurationMOE !== undefined ? ` (±${bm.normalDurationMOE.toFixed(3)})` : ''}`
                     : `(${bm.normalDuration?.toFixed(2)})`}
                 </td>
               ))}
