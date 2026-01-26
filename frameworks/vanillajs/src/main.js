@@ -12,11 +12,13 @@ function setHasRows(next) {
   if (next === hasRows) return;
   hasRows = next;
   if (next) {
-    noRowsMsg.style.display = "none";
-    table.style.display = "table";
+    // noRowsMsg.style.display = "none";
+    // table.style.display = "table";
+    noRowsMsg.replaceWith(table);
   } else {
-    noRowsMsg.style.display = "block";
-    table.style.display = "none";
+    // noRowsMsg.style.display = "block";
+    // table.style.display = "none";
+    table.replaceWith(noRowsMsg);
   }
 }
 
@@ -158,7 +160,6 @@ function clear() {
 }
 
 function reverse() {
-  // Move last->first into a fragment (no arrays).
   const frag = document.createDocumentFragment();
   while (tbody.lastChild) frag.appendChild(tbody.lastChild);
   tbody.appendChild(frag);
@@ -220,6 +221,7 @@ function restock() {
 }
 
 table.addEventListener("click", (e) => {
+  e.stopPropagation();
   let target = e.target;
   if (target && target.nodeType === 3) target = target.parentNode;
 

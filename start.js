@@ -122,99 +122,103 @@ async function execute(page, tasks, j) {
   }
 }
 
-async function waitForTwoRafs(page) {
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve))
-      )
-  );
-}
-
 function resolveNth(selector, j) {
   if (j === undefined) return selector;
   return selector.replace(/__nth__/g, `${j + 1}`);
 }
 
-async function installBenchStartListener(page) {
-  await page.evaluate(() => {
-    window.__bench = {
-      tStart: 0,
-      tEnd: 0,
-      _scheduled: false,
-    };
-    const bench = window.__bench;
-    document.addEventListener("click", () => bench.tStart ||= performance.now(), true);
-  });
-}
-
-async function waitForPaintAfterDone(page, done) {
-  const doneSelector = typeof done === "string" ? done : null;
-  const doneSrc = typeof done === "function" ? done.toString() : "";
-
-  await page.evaluate(
-    (selector, src, timeoutMs) =>
-      new Promise((resolve, reject) => {
-        const bench = window.__bench;
-        const deadline = performance.now() + timeoutMs;
-
-        let doneFn = null;
-        if (!selector) {
-          try {
-            doneFn = (0, eval)(`(${src})`);
-          } catch (e) {
-            reject(e);
-            return;
-          }
-        }
-
-        function isDone() {
-          if (selector) return !!document.querySelector(selector);
-
-          return !!doneFn();
-        }
-
-        function tick() {
-          try {
-            if (bench.tEnd) {
-              resolve(true);
-              return;
-            }
-            if (performance.now() > deadline) {
-              reject(new Error("Timed out waiting for done+paint"));
-              return;
-            }
-            if (isDone() && !bench._scheduled) {
-              bench._scheduled = true;
-              requestAnimationFrame(() => {
-                bench.tEnd = performance.now();
-                resolve(true);
-              });
-              return;
-            }
-            requestAnimationFrame(tick);
-          } catch (e) {
-            reject(e);
-          }
-        }
-
-        tick();
-      }),
-    doneSelector,
-    doneSrc,
-    5000
-  );
-}
-
 async function executeMeasured(page, measure) {
-  await installBenchStartListener(page);
-  await page.click(resolveNth(measure.click));
-  await waitForPaintAfterDone(page, typeof measure.done === "string" ? resolveNth(measure.done) : measure.done);
-  return await page.evaluate(() => {
-    const bench = window.__bench;
-    if (!bench || !bench.tStart || !bench.tEnd) return 0;
-    return bench.tEnd - bench.tStart;
+  const tracePath = "trace.json";
+  try {
+    await fs.promises.unlink(tracePath).catch(() => {});
+  } catch (e) {}
+
+  await page.tracing.start({
+    path: tracePath,
+    screenshots: false,
+    categories: ['devtools.timeline', 'blink.user_timing', 'latencyInfo', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.frame'],
   });
+
+  await page.click(resolveNth(measure.click));
+
+  const doneFn = typeof measure.done === "string" ? resolveNth(measure.done) : measure.done;
+  if (typeof doneFn === "string") {
+    await page.waitForSelector(doneFn);
+  } else {
+    await page.waitForFunction(doneFn);
+  }
+
+  await page.evaluate(() => performance.mark("bench-dom-done"));
+
+  // Wait for frame to be presented.
+  // We double-RAF to ensure the browser has a chance to push the frame.
+  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+  
+  // Add a small buffer to ensure the trace recorder catches the FramePresented event from the GPU thread/compositor
+  await new Promise(r => setTimeout(r, 100));
+
+  await page.tracing.stop();
+
+  const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
+  return analyzeTrace(traceData);
+}
+
+function analyzeTrace(trace) {
+  const events = trace.traceEvents;
+  
+  // 1. Find the click event (EventDispatch with type 'click')
+  // We want the *start* of the click event dispatch.
+  const clickEvent = events.find(e => 
+      e.name === 'EventDispatch' && 
+      e.args && 
+      e.args.data && 
+      e.args.data.type === 'click'
+  );
+  
+  if (!clickEvent) {
+      console.warn("Trace analysis: Could not find click event");
+      return 0;
+  }
+  
+  const clickTime = clickEvent.ts;
+
+  // 2. Find the mark "bench-dom-done"
+  const markEvent = events.find(e => 
+      e.cat.includes('blink.user_timing') && 
+      e.name === 'bench-dom-done'
+  );
+
+  if (!markEvent) {
+      console.warn("Trace analysis: Could not find bench-dom-done mark");
+      return 0;
+  }
+
+  const domDoneTime = markEvent.ts;
+
+  // 3. Find the next FramePresented after the mark
+  // FramePresented events are often in the 'disabled-by-default-devtools.timeline' category
+  // or just 'devtools.timeline'.
+  // We look for any event that signifies a frame on screen.
+  // 'FramePresented' is the most accurate for "pixels on screen".
+  
+  // Sort events by time just in case, though usually they are roughly ordered.
+  // We filter for FramePresented.
+  const frameEvents = events.filter(e => e.name === 'FramePresented');
+  
+  // Find the first one strictly after domDoneTime
+  let targetFrame = frameEvents.find(e => e.ts >= domDoneTime);
+  
+  if (!targetFrame) {
+      // Fallback: if no FramePresented, maybe look for CompositeLayers or simple End of Trace?
+      // If we waited 100ms+DoubleRaf, there *should* be a frame.
+      // If not, it means no paint was needed? 
+      // console.warn("Trace analysis: Could not find FramePresented after DOM done");
+      // Fallback to domDoneTime? No, that's just when JS finished waiting.
+      return (domDoneTime - clickTime) / 1000;
+  }
+  
+  // Duration in ms (ts is in microseconds)
+  return (targetFrame.ts - clickTime) / 1000;
 }
 
 (async () => {
@@ -254,20 +258,6 @@ async function executeMeasured(page, measure) {
     frameworks = (await fs.promises.readdir("./frameworks"));
   }
 
-  let existingResults = [];
-  try {
-    if (fs.existsSync("results/src/data.ts")) {
-      const dataContent = await fs.promises.readFile("results/src/data.ts", "utf8");
-      const startIndex = dataContent.indexOf('[');
-      const endIndex = dataContent.lastIndexOf(']');
-      if (startIndex !== -1 && endIndex !== -1) {
-        existingResults = JSON.parse(dataContent.substring(startIndex, endIndex + 1));
-      }
-    }
-  } catch (e) {
-    console.error("Failed to read existing results, starting fresh.", e);
-  }
-
   const browser = await puppeteer.launch({
     headless: false,
     args: [
@@ -287,6 +277,8 @@ async function executeMeasured(page, measure) {
   });
   
   const currentRunResults = [];
+
+  const frameworkEntries = [];
   for (const fw of frameworks) {
     try {
       const pkg = JSON.parse(await fs.promises.readFile(path.join("frameworks", fw, "package.json"), "utf8"));
@@ -299,9 +291,10 @@ async function executeMeasured(page, measure) {
           version = pkg.devDependencies[packageName];
         }
       }
-      const result = { 
-        framework: fw, 
-        benchmarks: [], 
+
+      const result = {
+        framework: fw,
+        benchmarks: benchmarks.map(b => ({ name: b.name, measurements: [] })),
         website: pkg.jsbenchmarks ? pkg.jsbenchmarks.website : pkg.website,
         version: version.replace(/^\^|~/, "")
       };
@@ -315,7 +308,7 @@ async function executeMeasured(page, measure) {
       result.gzipBundle = sizes.gzip;
       result.rawBundle = sizes.raw;
       result.brotliBundle = sizes.brotli;
-      
+
       const uri = `http://localhost:3000/${implPath}/`;
       const isKeyed = await checkKeyed(browser, uri);
       if (!isKeyed) {
@@ -324,16 +317,27 @@ async function executeMeasured(page, measure) {
 
       console.log(`${fw} bundle: gzip ${Math.round(sizes.gzip / 100) / 10}KB, raw ${Math.round(sizes.raw / 100) / 10}KB, brotli ${Math.round(sizes.brotli / 100) / 10}KB`);
       currentRunResults.push(result);
-      if (!argv.skipBenchmarks) {
-        for (let i = 0; i < benchmarks.length; i++) {
-          const benchmark = benchmarks[i];
-          const benchmarkResult = {
-            name: benchmark.name,
-            measurements: [],
-          };
-          result.benchmarks.push(benchmarkResult);
-          for (let i = 0; i < (argv.runs || benchmark.runs); i++) {
-            const page = await browser.newPage();
+      frameworkEntries.push({ fw, uri, result });
+    } catch (e) {
+      console.error(`Failed to benchmark ${fw}:`, e);
+    }
+  }
+
+  if (!argv.skipBenchmarks) {
+    const maxRuns = argv.runs ?? benchmarks.reduce((max, b) => Math.max(max, b.runs ?? 0), 0);
+
+    for (let runIndex = 0; runIndex < maxRuns; runIndex++) {
+      for (let benchmarkIndex = 0; benchmarkIndex < benchmarks.length; benchmarkIndex++) {
+        const benchmark = benchmarks[benchmarkIndex];
+        const runsForBenchmark = argv.runs ?? benchmark.runs;
+        if (runIndex >= runsForBenchmark) continue;
+
+        for (const entry of [...frameworkEntries]) {
+          const { fw, uri, result } = entry;
+          let failed = false;
+          let page;
+          try {
+            page = await browser.newPage();
             page.setDefaultTimeout(5000);
             await page.setViewport({ width: 1200, height: 800 });
             await page.goto(uri, { waitUntil: "load" });
@@ -345,25 +349,34 @@ async function executeMeasured(page, measure) {
             }
             await page.click("#clear");
             await page.waitForFunction(() => document.querySelectorAll("tbody tr").length === 0);
-            await waitForTwoRafs(page);
+            await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
             await execute(page, benchmark.setup);
             await page.evaluate(() => window.gc());
             await new Promise(r => setTimeout(r, 100));
             const duration = await executeMeasured(page, benchmark.measure);
             await page.evaluate(() => window.gc());
             await new Promise(r => setTimeout(r, 10));
-            const memory = await page.evaluate(() => performance.memory.usedJSHeapSize);
-            benchmarkResult.measurements.push({ duration, memory });
-            console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB" });
-            await page.close();
+            
+            const metrics = await page.metrics();
+            const memory = metrics.JSHeapUsedSize;
+            const nodeCount = metrics.Nodes;
+
+            result.benchmarks[benchmarkIndex].measurements.push({ duration, memory, nodes: nodeCount });
+            console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB", nodes: nodeCount });
+          } catch (e) {
+            console.error(`Failed to benchmark ${fw} (${benchmark.name}, run ${runIndex + 1}):`, e);
+            failed = true;
+          } finally {
+            if (page) await page.close();
+          }
+
+          if (failed) {
+            const idx = frameworkEntries.findIndex(e => e.fw === fw);
+            if (idx !== -1) frameworkEntries.splice(idx, 1);
+            const resIdx = currentRunResults.findIndex(r => r.framework === fw);
+            if (resIdx !== -1) currentRunResults.splice(resIdx, 1);
           }
         }
-      }
-    } catch (e) {
-      console.error(`Failed to benchmark ${fw}:`, e);
-      const idx = currentRunResults.findIndex(r => r.framework === fw);
-      if (idx !== -1) {
-        currentRunResults.splice(idx, 1);
       }
     }
   }
@@ -378,36 +391,13 @@ async function executeMeasured(page, measure) {
     return a.name.localeCompare(b.name);
   }
 
-  function mergeFrameworkResults(existing, current) {
-    if (!existing) return current;
-
-    const bmMap = new Map();
-    for (const bm of existing.benchmarks ?? []) bmMap.set(bm.name, bm);
-    for (const bm of current.benchmarks ?? []) bmMap.set(bm.name, bm);
-
-    const mergedBenchmarks = Array.from(bmMap.values()).sort(sortBenchmarksCanonical);
-
-    return {
-      ...existing,
-      ...current,
-      website: current.website ?? existing.website,
-      version: current.version ?? existing.version,
-      rawBundle: current.rawBundle ?? existing.rawBundle,
-      gzipBundle: current.gzipBundle ?? existing.gzipBundle,
-      brotliBundle: current.brotliBundle ?? existing.brotliBundle,
-      stars: current.stars || existing.stars,
-      downloads: current.downloads || existing.downloads,
-      benchmarks: mergedBenchmarks,
-    };
-  }
-
-  const resultMap = new Map(existingResults.map(r => [r.framework, r]));
   for (const r of currentRunResults) {
-    resultMap.set(r.framework, mergeFrameworkResults(resultMap.get(r.framework), r));
+    if (Array.isArray(r.benchmarks)) {
+      r.benchmarks.sort(sortBenchmarksCanonical);
+    }
   }
-  const results = Array.from(resultMap.values());
 
-  fs.writeFileSync("results/src/data.ts", `export const results = ${JSON.stringify(results)};`);
+  fs.writeFileSync("results/src/data.ts", `export const results = ${JSON.stringify(currentRunResults)};`);
   const duration = performance.now() - start;
   const minutes = Math.floor(duration / 1000 / 60);
   const seconds = Math.round(duration / 1000) % 60;
