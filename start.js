@@ -237,6 +237,10 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
     .alias("help", "h")
     .argv;
 
+  // Ensure directories exist
+  await fs.promises.mkdir("results/frameworks", { recursive: true });
+  await fs.promises.mkdir("results/traces", { recursive: true });
+
   let frameworks;
   let benchmarks = allBenchmarks;
   if (argv.benchmarks) {
@@ -247,6 +251,22 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
     frameworks = argv.frameworks.split(",").map(f => f.trim());
   } else {
     frameworks = (await fs.promises.readdir("./frameworks"));
+  }
+
+  // Targeted cleanup of previous runs for the selected frameworks/benchmarks
+  if (!argv.skipBenchmarks) {
+    const tracesDir = path.join("results", "traces");
+    const existingFiles = await fs.promises.readdir(tracesDir);
+    for (const fw of frameworks) {
+        for (const bench of benchmarks) {
+            const prefix = `${fw}-${bench.name}-`;
+            for (const file of existingFiles) {
+                if (file.startsWith(prefix)) {
+                    await fs.promises.unlink(path.join(tracesDir, file)).catch(() => {});
+                }
+            }
+        }
+    }
   }
 
   const browser = await puppeteer.launch({
@@ -267,8 +287,6 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
     ],
   });
   
-  const currentRunResults = [];
-
   const frameworkEntries = [];
   for (const fw of frameworks) {
     try {
@@ -285,7 +303,7 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
 
       const result = {
         framework: fw,
-        benchmarks: benchmarks.map(b => ({ name: b.name, measurements: [] })),
+        benchmarks: [], // We don't need to prepopulate this for the file
         website: pkg.jsbenchmarks ? pkg.jsbenchmarks.website : pkg.website,
         version: version.replace(/^\^|~/, "")
       };
@@ -300,6 +318,12 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
       result.rawBundle = sizes.raw;
       result.brotliBundle = sizes.brotli;
 
+      // Save framework metadata immediately
+      await fs.promises.writeFile(
+        path.join("results", "frameworks", `${fw}.json`), 
+        JSON.stringify(result, null, 2)
+      );
+
       const uri = `http://localhost:3000/${implPath}/`;
       const isKeyed = await checkKeyed(browser, uri);
       if (!isKeyed) {
@@ -307,7 +331,6 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
       }
 
       console.log(`${fw} bundle: gzip ${Math.round(sizes.gzip / 100) / 10}KB, raw ${Math.round(sizes.raw / 100) / 10}KB, brotli ${Math.round(sizes.brotli / 100) / 10}KB`);
-      currentRunResults.push(result);
       frameworkEntries.push({ fw, uri, result });
     } catch (e) {
       console.error(`Failed to benchmark ${fw}:`, e);
@@ -349,7 +372,20 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
             await new Promise(r => setTimeout(r, 10));
             const metrics = await page.metrics();
             const memory = metrics.JSHeapUsedSize;
-            result.benchmarks[benchmarkIndex].measurements.push({ traceFile, memory });
+            
+            // Save measurement metadata
+            const meta = {
+                framework: fw,
+                benchmark: benchmark.name,
+                runIndex,
+                memory,
+                traceFile: traceFile
+            };
+            await fs.promises.writeFile(
+                path.join("results", "traces", `${traceFile}.meta.json`), 
+                JSON.stringify(meta, null, 2)
+            );
+
             console.log(`${fw} ${benchmark.name}:`, { trace: traceFile, memory: (memory / 1024 / 1024).toFixed(1) + "MB" });
           } catch (e) {
             console.error(`Failed to benchmark ${fw} (${benchmark.name}, run ${runIndex + 1}):`, e);
@@ -361,8 +397,7 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
           if (failed) {
             const idx = frameworkEntries.findIndex(e => e.fw === fw);
             if (idx !== -1) frameworkEntries.splice(idx, 1);
-            const resIdx = currentRunResults.findIndex(r => r.framework === fw);
-            if (resIdx !== -1) currentRunResults.splice(resIdx, 1);
+            // No need to remove from currentRunResults as we don't use it anymore
           }
         }
       }
@@ -370,22 +405,6 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
   }
   await browser.close();
   
-  const benchmarkOrder = new Map(allBenchmarks.map((b, i) => [b.name, i]));
-
-  function sortBenchmarksCanonical(a, b) {
-    const aIdx = benchmarkOrder.has(a.name) ? benchmarkOrder.get(a.name) : Number.POSITIVE_INFINITY;
-    const bIdx = benchmarkOrder.has(b.name) ? benchmarkOrder.get(b.name) : Number.POSITIVE_INFINITY;
-    if (aIdx !== bIdx) return aIdx - bIdx;
-    return a.name.localeCompare(b.name);
-  }
-
-  for (const r of currentRunResults) {
-    if (Array.isArray(r.benchmarks)) {
-      r.benchmarks.sort(sortBenchmarksCanonical);
-    }
-  }
-
-  fs.writeFileSync("results/raw-data.json", JSON.stringify(currentRunResults, null, 2));
   const duration = performance.now() - start;
   const minutes = Math.floor(duration / 1000 / 60);
   const seconds = Math.round(duration / 1000) % 60;
