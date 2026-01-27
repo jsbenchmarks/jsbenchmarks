@@ -64,23 +64,20 @@ function analyzeTrace(trace) {
         continue;
       }
 
-      // Check if duration needs calculation
-      if (meta.duration === undefined) {
-        const tracePath = path.join(tracesDir, meta.traceFile);
-        if (fs.existsSync(tracePath)) {
-            try {
-                const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
-                meta.duration = analyzeTrace(traceData);
-                // Save back to meta file to cache it
-                await fs.promises.writeFile(metaPath, JSON.stringify(meta, null, 2));
-            } catch (e) {
-                console.error(`Error analyzing trace ${tracePath}:`, e);
-                meta.duration = 0;
-            }
-        } else {
-            console.warn(`Warning: Trace file ${tracePath} not found for meta ${metaFile}`);
-            meta.duration = 0;
+      const tracePath = path.join(tracesDir, meta.traceFile);
+      if (fs.existsSync(tracePath)) {
+        try {
+          const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
+          meta.duration = analyzeTrace(traceData);
+          // Save back to meta file to cache it
+          await fs.promises.writeFile(metaPath, JSON.stringify(meta, null, 2));
+        } catch (e) {
+          console.error(`Error analyzing trace ${tracePath}:`, e);
+          meta.duration = 0;
         }
+      } else {
+        console.warn(`Warning: Trace file ${tracePath} not found for meta ${metaFile}`);
+        meta.duration = 0;
       }
 
       // Add to framework
@@ -88,13 +85,13 @@ function analyzeTrace(trace) {
       if (fw) {
         let bench = fw.benchmarks.find(b => b.name === meta.benchmark);
         if (!bench) {
-            bench = { name: meta.benchmark, measurements: [] };
-            fw.benchmarks.push(bench);
+          bench = { name: meta.benchmark, measurements: [] };
+          fw.benchmarks.push(bench);
         }
         bench.measurements.push({
-            traceFile: meta.traceFile,
-            memory: meta.memory,
-            duration: meta.duration
+          traceFile: meta.traceFile,
+          memory: meta.memory,
+          duration: meta.duration
         });
       }
     }
@@ -114,17 +111,17 @@ function analyzeTrace(trace) {
   for (const result of results) {
     // Sort benchmarks
     result.benchmarks.sort(sortBenchmarksCanonical);
-    
+
     // Sort measurements by run index (inferred from traceFile name usually ending in -N.json)
     // or just leave them as is. Usually order doesn't matter for stats, but nice for stability.
     for (const b of result.benchmarks) {
-        b.measurements.sort((m1, m2) => {
-            const getRun = (s) => parseInt(s.match(/-(\d+)\.json$/)?.[1] || "0");
-            return getRun(m1.traceFile) - getRun(m2.traceFile);
-        });
+      b.measurements.sort((m1, m2) => {
+        const getRun = (s) => parseInt(s.match(/-(\d+)\.json$/)?.[1] || "0");
+        return getRun(m1.traceFile) - getRun(m2.traceFile);
+      });
     }
   }
-  
+
   // Sort frameworks by name
   results.sort((a, b) => a.framework.localeCompare(b.framework));
 
