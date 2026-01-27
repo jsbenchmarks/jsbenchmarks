@@ -152,7 +152,81 @@ async function executeMeasured(page, measure) {
   return analyzeTrace(traceData);
 }
 
+// function analyzeTrace(trace) {
+//   const events = trace.traceEvents;
+//   const clickEvent = events.find(e => 
+//       e.name === 'EventDispatch' && 
+//       e.args && 
+//       e.args.data && 
+//       e.args.data.type === 'click'
+//   );
+//   if (!clickEvent) {
+//       console.warn("Trace analysis: Could not find click event");
+//       return Infinity;
+//   }
+//   const clickTime = clickEvent.ts;
+//   const markEvent = events.find(e => 
+//       e.cat.includes('blink.user_timing') && 
+//       e.name === 'bench-dom-done'
+//   );
+//   if (!markEvent) {
+//       console.warn("Trace analysis: Could not find bench-dom-done mark");
+//       return Infinity;
+//   }
+//   const domDoneTime = markEvent.ts;
+//   const commitEvents = events.filter(e => e.name === 'Commit');
+//   let targetFrame = commitEvents.find(e => e.ts >= domDoneTime);
+
+//   if (!targetFrame) {
+//       console.warn("Trace analysis: Could not find Commit event");
+//       return Infinity;
+//   }
+//   return (targetFrame.ts - clickTime) / 1000;
+// }
 function analyzeTrace(trace) {
+  const events = trace.traceEvents;
+
+  const clickEvent = events.find(e => 
+    e.name === 'EventDispatch' && 
+    e.args?.data?.type === 'click'
+  );
+  
+  const markEvent = events.find(e => 
+    e.cat.includes('blink.user_timing') && 
+    e.name === 'bench-dom-done'
+  );
+
+  if (!clickEvent || !markEvent) return Infinity;
+
+  // 1. Primary check: Look for a Paint event (standard behavior)
+  let targetEvent = events.find(e => 
+    e.name === 'Paint' && 
+    e.ts >= markEvent.ts
+  );
+
+  // 2. Fallback: Look for a Commit event
+  // Modern Chrome often skips 'Paint' if only the Layer Tree needs updating
+  if (!targetEvent) {
+    targetEvent = events.find(e => 
+      e.name === 'Commit' && 
+      e.ts >= markEvent.ts
+    );
+  }
+
+  // 3. Final Fallback: CompositeLayers
+  if (!targetEvent) {
+    targetEvent = events.find(e => 
+      e.name === 'CompositeLayers' && 
+      e.ts >= markEvent.ts
+    );
+  }
+
+  if (!targetEvent) return Infinity;
+
+  // Use the end of the event duration
+  return (targetEvent.ts + (targetEvent.dur || 0) - clickEvent.ts) / 1000;
+}
+function analyzeTrace2(trace) {
   const events = trace.traceEvents;
   const clickEvent = events.find(e => 
       e.name === 'EventDispatch' && 
@@ -174,8 +248,8 @@ function analyzeTrace(trace) {
       return Infinity;
   }
   const domDoneTime = markEvent.ts;
-  const frameEvents = events.filter(e => e.name === 'FramePresented' || e.name === 'AnimationFrame::Presentation');
-  let targetFrame = frameEvents.find(e => e.ts >= domDoneTime);
+  const commitEvents = events.filter(e => e.name === 'Commit');
+  let targetFrame = commitEvents.find(e => e.ts >= domDoneTime);
   return (targetFrame.ts - clickTime) / 1000;
 }
 
