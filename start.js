@@ -127,16 +127,20 @@ function resolveNth(selector, j) {
   return selector.replace(/__nth__/g, `${j + 1}`);
 }
 
-async function executeMeasured(page, measure) {
+async function executeMeasured(page, measure, framework, benchmarkName, runIndex) {
+  const traceFilename = `${framework}-${benchmarkName}-${runIndex}.json`;
   const tracePath = "trace.json";
+  const storagePath = path.join("results", "traces", traceFilename);
   try {
-    await fs.promises.unlink(tracePath).catch(() => {});
+    await fs.promises.unlink(tracePath);
   } catch (e) {}
+  
   await page.tracing.start({
     path: tracePath,
     screenshots: false,
-    categories: ['devtools.timeline', 'blink.user_timing', 'latencyInfo', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.frame'],
+    categories: ['devtools.timeline', 'blink.user_timing', 'disabled-by-default-devtools.timeline'],
   });
+  
   await page.click(resolveNth(measure.click));
   const doneFn = typeof measure.done === "string" ? resolveNth(measure.done) : measure.done;
   if (typeof doneFn === "string") {
@@ -144,113 +148,17 @@ async function executeMeasured(page, measure) {
   } else {
     await page.waitForFunction(doneFn);
   }
+  
   await page.evaluate(() => performance.mark("bench-dom-done"));
   await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
   await new Promise(r => setTimeout(r, 100));
   await page.tracing.stop();
-  const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
-  return analyzeTrace(traceData);
-}
-
-// function analyzeTrace(trace) {
-//   const events = trace.traceEvents;
-//   const clickEvent = events.find(e => 
-//       e.name === 'EventDispatch' && 
-//       e.args && 
-//       e.args.data && 
-//       e.args.data.type === 'click'
-//   );
-//   if (!clickEvent) {
-//       console.warn("Trace analysis: Could not find click event");
-//       return Infinity;
-//   }
-//   const clickTime = clickEvent.ts;
-//   const markEvent = events.find(e => 
-//       e.cat.includes('blink.user_timing') && 
-//       e.name === 'bench-dom-done'
-//   );
-//   if (!markEvent) {
-//       console.warn("Trace analysis: Could not find bench-dom-done mark");
-//       return Infinity;
-//   }
-//   const domDoneTime = markEvent.ts;
-//   const commitEvents = events.filter(e => e.name === 'Commit');
-//   let targetFrame = commitEvents.find(e => e.ts >= domDoneTime);
-
-//   if (!targetFrame) {
-//       console.warn("Trace analysis: Could not find Commit event");
-//       return Infinity;
-//   }
-//   return (targetFrame.ts - clickTime) / 1000;
-// }
-function analyzeTrace(trace) {
-  const events = trace.traceEvents;
-
-  const clickEvent = events.find(e => 
-    e.name === 'EventDispatch' && 
-    e.args?.data?.type === 'click'
-  );
   
-  const markEvent = events.find(e => 
-    e.cat.includes('blink.user_timing') && 
-    e.name === 'bench-dom-done'
-  );
-
-  if (!clickEvent || !markEvent) return Infinity;
-
-  // 1. Primary check: Look for a Paint event (standard behavior)
-  let targetEvent = events.find(e => 
-    e.name === 'Paint' && 
-    e.ts >= markEvent.ts
-  );
-
-  // 2. Fallback: Look for a Commit event
-  // Modern Chrome often skips 'Paint' if only the Layer Tree needs updating
-  if (!targetEvent) {
-    targetEvent = events.find(e => 
-      e.name === 'Commit' && 
-      e.ts >= markEvent.ts
-    );
-  }
-
-  // 3. Final Fallback: CompositeLayers
-  if (!targetEvent) {
-    targetEvent = events.find(e => 
-      e.name === 'CompositeLayers' && 
-      e.ts >= markEvent.ts
-    );
-  }
-
-  if (!targetEvent) return Infinity;
-
-  // Use the end of the event duration
-  return (targetEvent.ts + (targetEvent.dur || 0) - clickEvent.ts) / 1000;
-}
-function analyzeTrace2(trace) {
-  const events = trace.traceEvents;
-  const clickEvent = events.find(e => 
-      e.name === 'EventDispatch' && 
-      e.args && 
-      e.args.data && 
-      e.args.data.type === 'click'
-  );
-  if (!clickEvent) {
-      console.warn("Trace analysis: Could not find click event");
-      return Infinity;
-  }
-  const clickTime = clickEvent.ts;
-  const markEvent = events.find(e => 
-      e.cat.includes('blink.user_timing') && 
-      e.name === 'bench-dom-done'
-  );
-  if (!markEvent) {
-      console.warn("Trace analysis: Could not find bench-dom-done mark");
-      return Infinity;
-  }
-  const domDoneTime = markEvent.ts;
-  const commitEvents = events.filter(e => e.name === 'Commit');
-  let targetFrame = commitEvents.find(e => e.ts >= domDoneTime);
-  return (targetFrame.ts - clickTime) / 1000;
+  // Move trace file to storage directory
+  fs.mkdirSync(path.join("results", "traces"), { recursive: true });
+  await fs.promises.rename(tracePath, storagePath);
+  
+  return traceFilename;
 }
 
 (async () => {
@@ -385,13 +293,13 @@ function analyzeTrace2(trace) {
             await execute(page, benchmark.setup);
             await page.evaluate(() => window.gc());
             await new Promise(r => setTimeout(r, 100));
-            const duration = await executeMeasured(page, benchmark.measure);
+            const traceFile = await executeMeasured(page, benchmark.measure, fw, benchmark.name, runIndex);
             await page.evaluate(() => window.gc());
             await new Promise(r => setTimeout(r, 10));
             const metrics = await page.metrics();
             const memory = metrics.JSHeapUsedSize;
-            result.benchmarks[benchmarkIndex].measurements.push({ duration, memory });
-            console.log(`${fw} ${benchmark.name}:`, { duration: Math.round(duration), memory: (memory / 1024 / 1024).toFixed(1) + "MB" });
+            result.benchmarks[benchmarkIndex].measurements.push({ traceFile, memory });
+            console.log(`${fw} ${benchmark.name}:`, { trace: traceFile, memory: (memory / 1024 / 1024).toFixed(1) + "MB" });
           } catch (e) {
             console.error(`Failed to benchmark ${fw} (${benchmark.name}, run ${runIndex + 1}):`, e);
             failed = true;
@@ -426,7 +334,7 @@ function analyzeTrace2(trace) {
     }
   }
 
-  fs.writeFileSync("results/src/data.ts", `export const results = ${JSON.stringify(currentRunResults)};`);
+  fs.writeFileSync("results/raw-data.json", JSON.stringify(currentRunResults, null, 2));
   const duration = performance.now() - start;
   const minutes = Math.floor(duration / 1000 / 60);
   const seconds = Math.round(duration / 1000) % 60;

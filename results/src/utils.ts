@@ -2,13 +2,6 @@ import type { Measurement, RawResult, Result } from "./types";
 
 export const COMPOSITE_NAME = "mean";
 
-function geoMean(values: number[]): number {
-  if (values.length === 0) return 0;
-  let sumLog = 0;
-  for (const v of values) sumLog += Math.log(v);
-  return Math.exp(sumLog / values.length);
-}
-
 export function color(norm: number): string {
   if (norm >= 10) return "oklch(80% 0.1 300)";
   if (norm <= 1) return "oklch(80% 0.1 140)";
@@ -125,8 +118,13 @@ export function calculateResults(input: RawResult[]): Result[] {
 
     const compositeNormalDuration = Math.pow(totalDurNorm, 1 / result.benchmarks.length);
     const compositeNormalMemory = Math.pow(totalMemNorm, 1 / result.benchmarks.length);
-    const compositeDurationMOE = compositeNormalDuration * geoMean(durRelMOEs);
-    const compositeMemoryMOE = compositeNormalMemory * geoMean(memRelMOEs);
+
+    // Relative MOE of the Geometric Mean = (1/n) * sqrt(sum(relativeMOE^2))
+    const durRelMOESumSq = durRelMOEs.reduce((sum, r) => sum + r * r, 0);
+    const compositeDurationMOE = compositeNormalDuration * (Math.sqrt(durRelMOESumSq) / result.benchmarks.length);
+
+    const memRelMOESumSq = memRelMOEs.reduce((sum, r) => sum + r * r, 0);
+    const compositeMemoryMOE = compositeNormalMemory * (Math.sqrt(memRelMOESumSq) / result.benchmarks.length);
 
     result.benchmarks.unshift({
       name: COMPOSITE_NAME,

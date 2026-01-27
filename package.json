@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "bench": "node start.js",
+    "bench": "node start.js && npm run results",
+    "results": "node process-results.js",
     "serve": "serve",
     "build-frameworks": "for d in frameworks/*; do (cd \"$d\" && npm i && npm run build); done"
   },
