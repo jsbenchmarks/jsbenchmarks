@@ -141,15 +141,27 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
     categories: ['devtools.timeline', 'blink.user_timing', 'disabled-by-default-devtools.timeline'],
   });
   
-  await page.click(resolveNth(measure.click));
   const doneFn = typeof measure.done === "string" ? resolveNth(measure.done) : measure.done;
+  let donePromise;
   if (typeof doneFn === "string") {
-    await page.waitForSelector(doneFn);
+    donePromise = page.waitForFunction((selector) => {
+      if (document.querySelector(selector)) {
+        performance.mark("bench-dom-done");
+        return true;
+      }
+    }, {}, doneFn);
   } else {
-    await page.waitForFunction(doneFn);
+    donePromise = page.waitForFunction((fnStr) => {
+      const check = new Function("return (" + fnStr + ")")();
+      if (check()) {
+        performance.mark("bench-dom-done");
+        return true;
+      }
+    }, {}, doneFn.toString());
   }
-  
-  await page.evaluate(() => performance.mark("bench-dom-done"));
+
+  await page.click(resolveNth(measure.click));
+  await donePromise;
   await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
   await new Promise(r => setTimeout(r, 100));
   await page.tracing.stop();
