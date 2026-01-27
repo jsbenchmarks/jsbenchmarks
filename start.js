@@ -131,39 +131,78 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
   const traceFilename = `${framework}-${benchmarkName}-${runIndex}.json`;
   const tracePath = "trace.json";
   const storagePath = path.join("results", "traces", traceFilename);
+  
+  // Clean up previous trace if it exists locally
   try {
     await fs.promises.unlink(tracePath);
   } catch (e) {}
   
+  // Start Tracing
   await page.tracing.start({
     path: tracePath,
     screenshots: false,
     categories: ['devtools.timeline', 'blink.user_timing', 'disabled-by-default-devtools.timeline'],
   });
   
-  const doneFn = typeof measure.done === "string" ? resolveNth(measure.done) : measure.done;
-  let donePromise;
-  if (typeof doneFn === "string") {
-    donePromise = page.waitForFunction((selector) => {
-      if (document.querySelector(selector)) {
-        performance.mark("bench-dom-done");
-        return true;
-      }
-    }, {}, doneFn);
-  } else {
-    donePromise = page.waitForFunction((fnStr) => {
-      const check = new Function("return (" + fnStr + ")")();
-      if (check()) {
-        performance.mark("bench-dom-done");
-        return true;
-      }
-    }, {}, doneFn.toString());
-  }
+  // Prepare the condition string to be evaluated in the browser context.
+  // We resolve the "nth" replacement here in Node before sending the string to the browser.
+  const doneFnString = typeof measure.done === "string" 
+      ? `document.querySelector("${resolveNth(measure.done)}") !== null`
+      : `(${measure.done.toString()})()`;
 
-  await page.click(resolveNth(measure.click));
-  await donePromise;
-  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
-  await new Promise(r => setTimeout(r, 100));
+  const clickSelector = resolveNth(measure.click);
+
+  // Execute the benchmark logic entirely inside the browser to minimize IPC latency
+  await page.evaluate(async (selector, doneCondition) => {
+    return new Promise((resolve, reject) => {
+        // 1. Create a function from the condition string
+        const check = new Function("return " + doneCondition);
+
+        // 2. Setup MutationObserver to watch for DOM changes
+        const observer = new MutationObserver(() => {
+            if (check()) {
+                // DOM condition met: Mark immediately
+                performance.mark("bench-dom-done");
+                observer.disconnect();
+                resolve();
+            }
+        });
+
+        // 3. Start observing the body
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            characterData: true
+        });
+
+        // 4. Trigger the Action
+        // We use native DOM click to reduce Puppeteer protocol latency overhead
+        const btn = document.querySelector(selector);
+        if (btn) {
+            btn.click();
+        } else {
+            observer.disconnect();
+            reject(new Error(`Benchmark button not found: ${selector}`));
+            return;
+        }
+
+        // 5. Immediate check (for synchronous updates)
+        // If the framework updates the DOM synchronously inside the click handler,
+        // the observer callback might not have fired yet or we want to catch it ASAP.
+        if (check()) {
+            performance.mark("bench-dom-done");
+            observer.disconnect();
+            resolve();
+        }
+    });
+  }, clickSelector, doneFnString);
+
+  // Wait a buffer period to ensure the Paint/Commit event is captured.
+  // The mark happens at the end of Scripting; Painting happens shortly after.
+  // We need to keep the trace recording long enough to catch that Paint.
+  await new Promise(r => setTimeout(r, 200));
+  
   await page.tracing.stop();
   
   // Move trace file to storage directory

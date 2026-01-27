@@ -41,21 +41,38 @@ const rowProto = rowTemplate.content.firstElementChild;
 
 function createRow(row) {
   const tr = rowProto.cloneNode(true);
-  const c = tr.children;
-
-  const idNode = c[0].firstChild;
-  const nameNode = c[1].firstChild;
-  const weightNode = c[2].firstChild;
-  const dimsNode = c[3].firstChild;
-  const powerNode = c[4].firstChild;
-  const priceNode = c[5].firstChild;
-  const statusNode = c[6].firstChild;
-  const ratingNode = c[7].firstChild;
-
+  
+  // const c = tr.children;
+  // const idNode = c[0].firstChild;
+  // const nameNode = c[1].firstChild;
+  // const weightNode = c[2].firstChild;
+  // const dimsNode = c[3].firstChild;
+  // const powerNode = c[4].firstChild;
+  // const priceNode = c[5].firstChild;
+  // const statusNode = c[6].firstChild;
+  // const ratingNode = c[7].firstChild;
+  // lets iterate with nextSibling for a change
+  let node = tr.firstChild;
+  const idNode = node.firstChild;
+  node = node.nextSibling;
+  const nameNode = node.firstChild;
+  node = node.nextSibling;
+  const weightNode = node.firstChild;
+  node = node.nextSibling;
+  const dimsNode = node.firstChild;
+  node = node.nextSibling;
+  const powerNode = node.firstChild;
+  node = node.nextSibling;
+  const priceNode = node.firstChild;
+  node = node.nextSibling;
+  const statusNode = node.firstChild;
+  node = node.nextSibling;
+  const ratingNode = node.firstChild;
+  
   // Cache only what the benchmarks need after creation.
   tr._id = row.id;
   tr._name = row.name;
-  tr._status = row.availabilityStatus;
+  // tr._status = row.availabilityStatus;
   tr._w = weightNode;
   tr._d = dimsNode;
   tr._p = powerNode;
@@ -97,20 +114,20 @@ function createRow(row) {
   tr._idim = id;
   tr._ip = ip;
 
-  idNode.data = row.id;
-  nameNode.data = row.name;
+  idNode.nodeValue = row.id;
+  nameNode.nodeValue = row.name;
   if (isMetric) {
-    weightNode.data = mw;
-    dimsNode.data = md;
-    powerNode.data = mp;
+    weightNode.nodeValue = mw;
+    dimsNode.nodeValue = md;
+    powerNode.nodeValue = mp;
   } else {
-    weightNode.data = iw;
-    dimsNode.data = id;
-    powerNode.data = ip;
+    weightNode.nodeValue = iw;
+    dimsNode.nodeValue = id;
+    powerNode.nodeValue = ip;
   }
-  priceNode.data = "$" + row.price.toFixed(2);
-  statusNode.data = row.availabilityStatus;
-  ratingNode.data = row.rating.toFixed(1);
+  priceNode.nodeValue = "$" + row.price.toFixed(2);
+  statusNode.nodeValue = row.availabilityStatus;
+  ratingNode.nodeValue = row.rating.toFixed(1);
 
   return tr;
 }
@@ -195,17 +212,17 @@ function toggleUnits() {
   if (isMetric) {
     for (let i = 0; i < rows.length; i++) {
       const tr = rows[i];
-      tr._w.data = tr._mw;
-      tr._d.data = tr._md;
-      tr._p.data = tr._mp;
+      tr._w.nodeValue = tr._mw;
+      tr._d.nodeValue = tr._md;
+      tr._p.nodeValue = tr._mp;
     }
     return;
   }
   for (let i = 0; i < rows.length; i++) {
     const tr = rows[i];
-    tr._w.data = tr._iw;
-    tr._d.data = tr._idim;
-    tr._p.data = tr._ip;
+    tr._w.nodeValue = tr._iw;
+    tr._d.nodeValue = tr._idim;
+    tr._p.nodeValue = tr._ip;
   }
 }
 
@@ -213,9 +230,9 @@ function restock() {
   const rows = tbody.children;
   for (let i = 0; i < rows.length; i++) {
     const tr = rows[i];
-    if (tr._status === "Out of Stock") {
-      tr._status = "In Stock";
-      tr._s.data = "In Stock";
+    if (tr._s.nodeValue === "Out of Stock") {
+      // tr._status = "In Stock";
+      tr._s.nodeValue = "In Stock";
     }
   }
 }

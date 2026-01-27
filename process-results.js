@@ -17,27 +17,27 @@ function analyzeTrace(trace) {
   if (!clickEvent || !markEvent) return Infinity;
 
   // 1. Primary check: Look for a Paint event (standard behavior)
-  let targetEvent = events.find(e => 
-    e.name === 'Paint' && 
-    e.ts >= markEvent.ts
-  );
+  // let targetEvent = events.find(e => 
+  //   e.name === 'Paint' && 
+  //   e.ts >= markEvent.ts
+  // );
 
   // 2. Fallback: Look for a Commit event
   // Modern Chrome often skips 'Paint' if only the Layer Tree needs updating
-  if (!targetEvent) {
-    targetEvent = events.find(e => 
+  // if (!targetEvent) {
+    const targetEvent = events.find(e => 
       e.name === 'Commit' && 
       e.ts >= markEvent.ts
     );
-  }
+  // }
 
   // 3. Final Fallback: CompositeLayers
-  if (!targetEvent) {
-    targetEvent = events.find(e => 
-      e.name === 'CompositeLayers' && 
-      e.ts >= markEvent.ts
-    );
-  }
+  // if (!targetEvent) {
+  //   targetEvent = events.find(e => 
+  //     e.name === 'CompositeLayers' && 
+  //     e.ts >= markEvent.ts
+  //   );
+  // }
 
   if (!targetEvent) return Infinity;
 
