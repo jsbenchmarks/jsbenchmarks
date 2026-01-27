@@ -68,16 +68,62 @@
 }
 
 .TraceViewer-canvas {
+    display: none; /* Hide or remove if fully deprecated, but I'll remove the class completely */
+}
+
+.TraceViewer-timeline-container {
     width: 100%;
+    height: 300px; /* Fixed viewport height */
+    overflow-y: auto; /* Allow vertical scrolling for deep stacks */
+    overflow-x: hidden;
+    background: #f5f5f5;
     border: 1px solid #ddd;
     border-radius: 4px;
+    position: relative;
+}
+
+.TraceViewer-timeline {
+    position: relative;
+    width: 100%;
+    /* Height is set dynamically based on depth */
+    min-height: 100%;
 }
 
 @media (prefers-color-scheme: dark) {
-    .TraceViewer-canvas {
+    .TraceViewer-timeline-container {
+        background: #333;
         border-color: #444;
     }
 }
+
+.TraceViewer-timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #666;
+    padding: 0 2px;
+}
+
+.TraceViewer-event {
+    position: absolute;
+    /* top and height are set via inline styles */
+    min-width: 1px;
+    opacity: 0.9;
+    box-sizing: border-box; /* Include border in height */
+    border-bottom: 1px solid rgba(255,255,255,0.2); /* Separate stacked events */
+}
+
+.TraceViewer-event:hover {
+    opacity: 1;
+    z-index: 10;
+    outline: 1px solid rgba(0,0,0,0.5);
+}
+
+.TraceViewer-event.yellow { background: #f1c453; }
+.TraceViewer-event.purple { background: #998ec3; }
+.TraceViewer-event.green { background: #77bd6e; }
+.TraceViewer-event.red { background: #e05c5c; }
+
 
 .TraceViewer-legend {
     display: flex;

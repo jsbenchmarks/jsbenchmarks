@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import './TraceViewer.css';
 
 interface TraceViewerProps {
@@ -15,14 +15,15 @@ interface TraceEvent {
     args?: any;
     pid: number;
     tid: number;
+    level?: number;
 }
 
 export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
     const [events, setEvents] = useState<TraceEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const [timeWindow, setTimeWindow] = useState<{ start: number, end: number, duration: number } | null>(null);
+    const [maxDepth, setMaxDepth] = useState(0);
 
     useEffect(() => {
         setLoading(true);
@@ -34,14 +35,76 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
             })
             .then(data => {
                 const rawEvents = data.traceEvents as TraceEvent[];
-                // Filter for 'X' (Complete) events with duration
-                const meaningfulEvents = rawEvents.filter(e => e.ph === 'X' && e.dur && e.dur > 0).sort((a, b) => a.ts - b.ts);
 
-                if (meaningfulEvents.length === 0) {
-                    setError("No meaningful events found in trace.");
-                } else {
-                    setEvents(meaningfulEvents);
+                // Logic from benchmark/process-results.js
+                const clickEvent = rawEvents.find(e =>
+                    e.name === 'EventDispatch' &&
+                    e.args?.data?.type === 'click'
+                );
+                
+                const markEvent = rawEvents.find(e =>
+                    e.cat.includes('blink.user_timing') &&
+                    e.name === 'bench-dom-done'
+                );
+
+                if (!clickEvent || !markEvent) {
+                    throw new Error("Could not find start (click) or end (bench-dom-done) markers.");
                 }
+
+                const commitEvent = rawEvents.find(e =>
+                    e.name === 'Commit' &&
+                    e.ts >= markEvent.ts
+                );
+
+                if (!commitEvent) {
+                    throw new Error("Could not find Commit event after benchmark done.");
+                }
+
+                const startTs = clickEvent.ts;
+                const endTs = commitEvent.ts + (commitEvent.dur || 0);
+                const duration = endTs - startTs;
+
+                // Filter for events within the window
+                const relevantEvents = rawEvents.filter(e => {
+                    if (e.ph !== 'X' || !e.dur || e.dur <= 0) return false;
+                    const eventEnd = e.ts + e.dur;
+                    return eventEnd > startTs && e.ts < endTs;
+                })
+                .sort((a, b) => {
+                    // Sort by start time, then by duration (descending) to ensure containers come first
+                    if (a.ts !== b.ts) return a.ts - b.ts;
+                    return (b.dur || 0) - (a.dur || 0);
+                });
+
+                // Assign levels (flame chart logic)
+                let maxLevel = 0;
+                // Stack contains { endTs, level }
+                const stack: { endTs: number, level: number }[] = [];
+
+                const processedEvents = relevantEvents.map(e => {
+                    const eventEnd = e.ts + (e.dur || 0);
+                    
+                    // Pop events that have ended
+                    // We need to find the correct level. 
+                    // Standard flame chart: check stack top. If current starts after stack top ends, pop.
+                    // But we want to pack tightly if possible, or strict stack?
+                    // Strict stack (call stack) is safer for traces.
+                    
+                    // Remove items from stack that end before this event starts
+                    while (stack.length > 0 && stack[stack.length - 1].endTs <= e.ts) {
+                        stack.pop();
+                    }
+
+                    const level = stack.length;
+                    stack.push({ endTs: eventEnd, level });
+                    maxLevel = Math.max(maxLevel, level);
+
+                    return { ...e, level };
+                });
+
+                setEvents(processedEvents);
+                setTimeWindow({ start: startTs, end: endTs, duration });
+                setMaxDepth(maxLevel + 1);
                 setLoading(false);
             })
             .catch(err => {
@@ -51,57 +114,42 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
             });
     }, [traceFile]);
 
-    useEffect(() => {
-        if (loading || events.length === 0 || !canvasRef.current || !containerRef.current) return;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+    const getEventColor = (e: TraceEvent) => {
+        if (e.name === 'EvaluateScript' || e.name === 'FunctionCall' || e.name === 'v8.compile' || e.name === 'RunTask' || e.cat.includes('v8') || e.name === 'EventDispatch') {
+            return 'yellow'; 
+        }
+        else if (e.name === 'Layout' || e.name === 'UpdateLayerTree' || e.name === 'RecalculateStyles' || e.name === 'HitTest') {
+            return 'purple'; 
+        }
+        else if (e.name === 'Paint' || e.name === 'CompositeLayers' || e.name === 'RasterTask' || e.name === 'Commit') {
+            return 'green'; 
+        }
+        else if (e.name === 'GCEvent' || e.name === 'MajorGC' || e.name === 'MinorGC') {
+            return 'red'; 
+        }
+        return 'gray';
+    };
 
-        // Resize canvas to fit container
-        const width = containerRef.current.clientWidth;
-        canvas.width = width;
-        const height = canvas.height;
-        ctx.clearRect(0, 0, width, height);
+    // Helper to calculate style
+    const getEventStyle = (e: TraceEvent) => {
+        if (!timeWindow) return {};
+        const start = Math.max(e.ts, timeWindow.start);
+        const end = Math.min(e.ts + (e.dur || 0), timeWindow.end);
+        const dur = Math.max(0, end - start);
+        
+        const leftPct = ((start - timeWindow.start) / timeWindow.duration) * 100;
+        const widthPct = (dur / timeWindow.duration) * 100;
+        
+        const rowHeight = 20; // px
+        const top = (e.level || 0) * rowHeight;
 
-        const startTs = events[0].ts;
-        const endTs = events[events.length - 1].ts + (events[events.length - 1].dur || 0);
-        const totalDuration = endTs - startTs;
-
-        // Draw background
-        ctx.fillStyle = '#f5f5f5';
-        ctx.fillRect(0, 0, width, height);
-
-        // Draw events
-        events.forEach(e => {
-            const x = ((e.ts - startTs) / totalDuration) * width;
-            const w = Math.max(1, ((e.dur || 0) / totalDuration) * width); // Ensure at least 1px visible
-
-            let color = '#ccc';
-            // Simplified categorization logic
-            if (e.name === 'EvaluateScript' || e.name === 'FunctionCall' || e.name === 'v8.compile' || e.name === 'RunTask' || e.cat.includes('v8')) {
-                color = '#f1c453'; // Yellow (Scripting)
-            }
-            else if (e.name === 'Layout' || e.name === 'UpdateLayerTree' || e.name === 'RecalculateStyles' || e.name === 'HitTest') {
-                color = '#998ec3'; // Purple (Rendering)
-            }
-            else if (e.name === 'Paint' || e.name === 'CompositeLayers' || e.name === 'RasterTask') {
-                color = '#77bd6e'; // Green (Painting)
-            }
-            else if (e.name === 'GCEvent' || e.name === 'MajorGC' || e.name === 'MinorGC') {
-                color = '#e05c5c'; // Red (System/GC)
-            }
-
-            ctx.fillStyle = color;
-            ctx.fillRect(x, 20, w, 60);
-        });
-
-        // Draw timeline labels (Start and End)
-        ctx.fillStyle = '#333';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('0ms', 5, 15);
-        ctx.fillText(`${(totalDuration / 1000).toFixed(1)}ms`, width - 40, 15);
-
-    }, [events, loading]);
+        return {
+            left: `${leftPct}%`,
+            width: `${widthPct}%`,
+            top: `${top}px`,
+            height: '18px'
+        };
+    };
 
     return (
         <div className="TraceViewer-overlay" onClick={onClose}>
@@ -112,9 +160,29 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
                 </div>
                 {loading && <div className="TraceViewer-loading">Loading trace data...</div>}
                 {error && <div className="TraceViewer-error">{error}</div>}
-                {!loading && !error && (
-                    <div className="TraceViewer-content" ref={containerRef}>
-                        <canvas ref={canvasRef} height={100} className="TraceViewer-canvas" />
+                {!loading && !error && timeWindow && (
+                    <div className="TraceViewer-content">
+                        <div className="TraceViewer-timeline-container">
+                             <div className="TraceViewer-timeline" style={{ height: Math.max(100, maxDepth * 20) + 'px' }}>
+                                 {events.map((e, i) => {
+                                     const colorClass = getEventColor(e);
+                                     if (colorClass === 'gray') return null; 
+                                     
+                                     return (
+                                         <div 
+                                            key={i}
+                                            className={`TraceViewer-event ${colorClass}`}
+                                            style={getEventStyle(e)}
+                                            title={`${e.name} (${(e.dur || 0).toFixed(2)}ms)`}
+                                         />
+                                     );
+                                 })}
+                             </div>
+                        </div>
+                        <div className="TraceViewer-timeline-labels">
+                            <span>0ms</span>
+                            <span>{(timeWindow.duration / 1000).toFixed(1)}ms</span>
+                        </div>
                         <div className="TraceViewer-legend">
                             <div className="TraceViewer-legend-item"><span className="swatch yellow"></span> Scripting</div>
                             <div className="TraceViewer-legend-item"><span className="swatch purple"></span> Rendering</div>

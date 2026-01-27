@@ -11,7 +11,7 @@
 .FrameworkDetails-back {
     display: inline-block;
     margin-bottom: 20px;
-    color: #646cff;
+    color: var(--link-color);
     text-decoration: none;
 }
 
@@ -32,7 +32,7 @@
 }
 
 .FrameworkDetails-links a {
-    color: #646cff;
+    color: var(--link-color);
     text-decoration: none;
     font-weight: bold;
 }

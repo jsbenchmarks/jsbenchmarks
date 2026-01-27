@@ -6,7 +6,6 @@ import { MemoryTable } from './MemoryTable';
 import { results as rawResults } from '../data';
 import type { RawResult, Result, SortConfig } from '../types';
 import { calculateResults, COMPOSITE_NAME } from '../utils';
-import { Link } from 'react-router-dom';
 
 const inputData = rawResults as RawResult[];
 
