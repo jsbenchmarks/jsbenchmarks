@@ -33,7 +33,7 @@ export function color(norm: number): string {
 export function calculateResults(input: RawResult[]): Result[] {
   const results: Result[] = input.map(result => ({
     ...result,
-    version: result.framework === 'vanillajs' ? '0' : result.version,
+    version: result.framework === 'vanillajs' ? undefined : result.version,
     benchmarks: result.benchmarks.map(bm => ({
       ...bm,
       measurements: bm.measurements.map(m => ({ ...m })),

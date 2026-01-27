@@ -12,7 +12,7 @@ interface TraceEvent {
     ph: string;
     ts: number;
     dur?: number;
-    args?: any;
+    args?: { data?: { type?: string } };
     pid: number;
     tid: number;
     level?: number;
@@ -23,9 +23,9 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [timeWindow, setTimeWindow] = useState<{ start: number, end: number, duration: number } | null>(null);
-    const [maxDepth, setMaxDepth] = useState(0);
 
     useEffect(() => {
+        // eslint-disable-next-line
         setLoading(true);
         setError(null);
         fetch(`/traces/${traceFile}`)
@@ -64,37 +64,26 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
                 const endTs = commitEvent.ts + (commitEvent.dur || 0);
                 const duration = endTs - startTs;
 
-                // Filter for events within the window
                 const relevantEvents = rawEvents.filter(e => {
                     if (e.ph !== 'X' || !e.dur || e.dur <= 0) return false;
+                    if (e.name === 'RunTask') return false;
+                    if (e.name.includes('GC') || e.cat.toLowerCase().includes('gc')) return false;
                     const eventEnd = e.ts + e.dur;
                     return eventEnd > startTs && e.ts < endTs;
                 })
                 .sort((a, b) => {
-                    // Sort by start time, then by duration (descending) to ensure containers come first
                     if (a.ts !== b.ts) return a.ts - b.ts;
                     return (b.dur || 0) - (a.dur || 0);
                 });
 
-                // Assign levels (flame chart logic)
                 let maxLevel = 0;
-                // Stack contains { endTs, level }
                 const stack: { endTs: number, level: number }[] = [];
 
                 const processedEvents = relevantEvents.map(e => {
                     const eventEnd = e.ts + (e.dur || 0);
-                    
-                    // Pop events that have ended
-                    // We need to find the correct level. 
-                    // Standard flame chart: check stack top. If current starts after stack top ends, pop.
-                    // But we want to pack tightly if possible, or strict stack?
-                    // Strict stack (call stack) is safer for traces.
-                    
-                    // Remove items from stack that end before this event starts
                     while (stack.length > 0 && stack[stack.length - 1].endTs <= e.ts) {
                         stack.pop();
                     }
-
                     const level = stack.length;
                     stack.push({ endTs: eventEnd, level });
                     maxLevel = Math.max(maxLevel, level);
@@ -104,7 +93,6 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
 
                 setEvents(processedEvents);
                 setTimeWindow({ start: startTs, end: endTs, duration });
-                setMaxDepth(maxLevel + 1);
                 setLoading(false);
             })
             .catch(err => {
@@ -115,22 +103,18 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
     }, [traceFile]);
 
     const getEventColor = (e: TraceEvent) => {
-        if (e.name === 'EvaluateScript' || e.name === 'FunctionCall' || e.name === 'v8.compile' || e.name === 'RunTask' || e.cat.includes('v8') || e.name === 'EventDispatch') {
+        if (e.name === 'EvaluateScript' || e.name === 'FunctionCall' || e.name === 'v8.compile' || e.cat.includes('v8') || e.name === 'EventDispatch') {
             return 'yellow'; 
         }
-        else if (e.name === 'Layout' || e.name === 'UpdateLayerTree' || e.name === 'RecalculateStyles' || e.name === 'HitTest') {
+        else if (e.name === 'Layout' || e.name === 'UpdateLayerTree' || e.name === 'UpdateLayoutTree' || e.name === 'RecalculateStyles' || e.name === 'HitTest' || e.name === 'Pre-paint' || e.name === 'PrePaint' || e.name === 'Layerize') {
             return 'purple'; 
         }
         else if (e.name === 'Paint' || e.name === 'CompositeLayers' || e.name === 'RasterTask' || e.name === 'Commit') {
             return 'green'; 
         }
-        else if (e.name === 'GCEvent' || e.name === 'MajorGC' || e.name === 'MinorGC') {
-            return 'red'; 
-        }
         return 'gray';
     };
 
-    // Helper to calculate style
     const getEventStyle = (e: TraceEvent) => {
         if (!timeWindow) return {};
         const start = Math.max(e.ts, timeWindow.start);
@@ -139,15 +123,11 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
         
         const leftPct = ((start - timeWindow.start) / timeWindow.duration) * 100;
         const widthPct = (dur / timeWindow.duration) * 100;
-        
-        const rowHeight = 20; // px
-        const top = (e.level || 0) * rowHeight;
-
+        const top = 0;
         return {
             left: `${leftPct}%`,
             width: `${widthPct}%`,
             top: `${top}px`,
-            height: '18px'
         };
     };
 
@@ -162,8 +142,8 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
                 {error && <div className="TraceViewer-error">{error}</div>}
                 {!loading && !error && timeWindow && (
                     <div className="TraceViewer-content">
-                        <div className="TraceViewer-timeline-container">
-                             <div className="TraceViewer-timeline" style={{ height: Math.max(100, maxDepth * 20) + 'px' }}>
+                        <div className="TraceViewer-timeline-container" style={{ height: '60px' }}>
+                             <div className="TraceViewer-timeline" style={{ height: '100%' }}>
                                  {events.map((e, i) => {
                                      const colorClass = getEventColor(e);
                                      if (colorClass === 'gray') return null; 
@@ -173,21 +153,11 @@ export function TraceViewer({ traceFile, onClose }: TraceViewerProps) {
                                             key={i}
                                             className={`TraceViewer-event ${colorClass}`}
                                             style={getEventStyle(e)}
-                                            title={`${e.name} (${(e.dur || 0).toFixed(2)}ms)`}
+                                            title={`${e.name} (${((e.dur || 0) / 1000).toFixed(2)}ms)`}
                                          />
                                      );
                                  })}
                              </div>
-                        </div>
-                        <div className="TraceViewer-timeline-labels">
-                            <span>0ms</span>
-                            <span>{(timeWindow.duration / 1000).toFixed(1)}ms</span>
-                        </div>
-                        <div className="TraceViewer-legend">
-                            <div className="TraceViewer-legend-item"><span className="swatch yellow"></span> Scripting</div>
-                            <div className="TraceViewer-legend-item"><span className="swatch purple"></span> Rendering</div>
-                            <div className="TraceViewer-legend-item"><span className="swatch green"></span> Painting</div>
-                            <div className="TraceViewer-legend-item"><span className="swatch red"></span> GC / System</div>
                         </div>
                     </div>
                 )}

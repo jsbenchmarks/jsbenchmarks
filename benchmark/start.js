@@ -5,8 +5,8 @@ import * as util from "util";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as zlib from "zlib";
-import { benchmarks as allBenchmarks } from "./tests.js";
 import { prepare } from "./prepare.js";
+import { benchmarks as allBenchmarks } from "./tests.js";
 
 const gzip = util.promisify(zlib.gzip);
 const brotli = util.promisify(zlib.brotliCompress);
