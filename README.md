@@ -43,7 +43,7 @@ npm run dev
 
 ## Benchmark CLI Flags
 
-`npm run bench` runs `node start.js`.
+`npm run bench` runs `node benchmark/start.js`.
 
 - `--frameworks` / `-f`: Comma-separated list of frameworks (directory names under `frameworks/`). Default: all frameworks.
 - `--benchmarks` / `-b`: Comma-separated list of benchmarks to run. Default: all benchmarks.

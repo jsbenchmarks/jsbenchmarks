@@ -159,10 +159,13 @@ function insert() {
 }
 
 function clear() {
-  tbody.textContent = "";
+  setHasRows(false);
+  const newBody = document.createElement("tbody");
+  newBody.id = "tbody";
+  table.replaceChild(newBody, tbody);
+  tbody = newBody;
   oosRows.clear();
   selectedTr = null;
-  setHasRows(false);
 }
 
 function reverse() {

@@ -1,9 +1,9 @@
 {
   "type": "module",
   "scripts": {
-    "bench": "node start.js",
+    "bench": "node benchmark/start.js",
     "postbench": "npm run results",
-    "results": "node process-results.js",
+    "results": "node benchmark/process-results.js",
     "serve": "serve",
     "build-frameworks": "for d in frameworks/*; do (cd \"$d\" && npm i && npm run build); done"
   },
