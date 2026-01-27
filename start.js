@@ -6,6 +6,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import * as zlib from "zlib";
 import { benchmarks as allBenchmarks } from "./tests.js";
+import { prepare } from "./prepare.js";
 
 const gzip = util.promisify(zlib.gzip);
 const brotli = util.promisify(zlib.brotliCompress);
@@ -233,6 +234,10 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
       type: "number",
       description: "Number of runs to perform",
     })
+    .option("skip-build", {
+      type: "boolean",
+      description: "Skip npm install and npm run build steps",
+    })
     .help()
     .alias("help", "h")
     .argv;
@@ -252,6 +257,8 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
   } else {
     frameworks = (await fs.promises.readdir("./frameworks"));
   }
+
+  await prepare(frameworks, argv.skipBuild);
 
   // Targeted cleanup of previous runs for the selected frameworks/benchmarks
   if (!argv.skipBenchmarks) {
