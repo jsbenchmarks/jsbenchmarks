@@ -2,7 +2,6 @@ import { buildData, unitmap } from "common/data";
 
 let selectedTr = null;
 let isMetric = true;
-let oosRows = new Set();
 
 const table = document.querySelector("table");
 let tbody = document.querySelector("tbody");
@@ -38,7 +37,7 @@ const rowProto = rowTemplate.content.firstElementChild;
 
 function createRow(row) {
   const tr = rowProto.cloneNode(true);
-  
+
   let node = tr.firstChild;
   const idNode = node.firstChild;
   node = node.nextSibling;
@@ -55,7 +54,7 @@ function createRow(row) {
   const statusNode = node.firstChild;
   node = node.nextSibling;
   const ratingNode = node.firstChild;
-  
+
   // Cache only what the benchmarks need after creation.
   tr._id = row.id;
   tr._name = row.name;
@@ -113,7 +112,6 @@ function createRow(row) {
   }
   priceNode.nodeValue = "$" + row.price.toFixed(2);
   statusNode.nodeValue = row.availabilityStatus;
-  if (row.availabilityStatus === "Out of Stock") oosRows.add(tr);
   ratingNode.nodeValue = row.rating.toFixed(1);
 
   return tr;
@@ -122,7 +120,6 @@ function createRow(row) {
 function create() {
   const rows = buildData(1000);
   selectedTr = null;
-  oosRows.clear();
 
   const nextBody = document.createElement("tbody");
   nextBody.id = "tbody";
@@ -164,7 +161,6 @@ function clear() {
   newBody.id = "tbody";
   table.replaceChild(newBody, tbody);
   tbody = newBody;
-  oosRows.clear();
   selectedTr = null;
 }
 
@@ -193,7 +189,6 @@ function filter() {
   while (cur) {
     const prev = cur.previousElementSibling;
     if ((cur._id & 1) === 0) {
-      oosRows.delete(cur);
       cur.remove();
     }
     cur = prev;
@@ -222,10 +217,13 @@ function toggleUnits() {
 }
 
 function restock() {
-  for (const tr of oosRows) {
-    tr._s.nodeValue = "In Stock";
+  const rows = tbody.children;
+  for (let i = 0; i < rows.length; i++) {
+    const tr = rows[i];
+    if (tr._s.nodeValue === "Out of Stock") {
+      tr._s.nodeValue = "In Stock";
+    }
   }
-  oosRows.clear();
 }
 
 table.onclick = e => {
@@ -236,7 +234,6 @@ table.onclick = e => {
     const tr = target.parentNode && target.parentNode.parentNode;
     if (!tr || tr.parentNode !== tbody) return;
     if (selectedTr === tr) selectedTr = null;
-    oosRows.delete(tr);
     tr.remove();
     if (!tbody.firstElementChild) setHasRows(false);
     return;
