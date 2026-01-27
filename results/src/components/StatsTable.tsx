@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Result, SortConfig } from '../types';
 import { COMPOSITE_NAME, color } from '../utils';
 import { SortIndicator } from './SortIndicator';
@@ -53,13 +54,9 @@ export const StatsTable = ({ rows, sortConfig, onSort }: StatsTableProps) => {
               <td className="StatsTable-td StatsTable-sticky-col">
                 <div className="StatsTable-name-content">
                   <strong>
-                    {row.website ? (
-                      <a href={row.website} target="_blank" rel="noopener noreferrer" className="StatsTable-link">
-                        {row.framework}
-                      </a>
-                    ) : (
-                      row.framework
-                    )}
+                    <Link to={`/framework/${row.framework}`} className="StatsTable-link">
+                      {row.framework}
+                    </Link>
                   </strong>
                   {row.version && <span className="StatsTable-version">v{row.version}</span>}
                 </div>

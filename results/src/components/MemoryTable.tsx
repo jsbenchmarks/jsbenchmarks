@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Result, SortConfig } from '../types';
 import { COMPOSITE_NAME, color } from '../utils';
 import './MemoryTable.css';
@@ -37,13 +38,9 @@ export const MemoryTable = ({ rows, benchmarkNames, sortConfig, onSort }: Memory
               <td className="MemoryTable-td MemoryTable-sticky-col">
                 <div className="MemoryTable-name-content">
                   <strong>
-                    {row.website ? (
-                      <a href={row.website} target="_blank" rel="noopener noreferrer" className="MemoryTable-link">
-                        {row.framework}
-                      </a>
-                    ) : (
-                      row.framework
-                    )}
+                    <Link to={`/framework/${row.framework}`} className="MemoryTable-link">
+                      {row.framework}
+                    </Link>
                   </strong>
                   {row.version && <span className="MemoryTable-version">v{row.version}</span>}
                 </div>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Result, SortConfig } from '../types';
 import { COMPOSITE_NAME, color } from '../utils';
 import './BundleTable.css';
@@ -48,13 +49,9 @@ export const BundleTable = ({ rows, sortConfig, onSort }: BundleTableProps) => {
               <td className="BundleTable-td BundleTable-sticky-col">
                 <div className="BundleTable-name-content">
                   <strong>
-                    {row.website ? (
-                      <a href={row.website} target="_blank" rel="noopener noreferrer" className="BundleTable-link">
-                        {row.framework}
-                      </a>
-                    ) : (
-                      row.framework
-                    )}
+                    <Link to={`/framework/${row.framework}`} className="BundleTable-link">
+                      {row.framework}
+                    </Link>
                   </strong>
                   {row.version && <span className="BundleTable-version">v{row.version}</span>}
                 </div>

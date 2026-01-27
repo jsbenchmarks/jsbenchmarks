@@ -16,6 +16,7 @@ async function fetchStats(packageName) {
   
   let stars = 0;
   let downloads = 0;
+  let url = undefined;
   
   try {
     const downloadRes = await fetch(`https://api.npmjs.org/downloads/point/last-week/${packageName}`);
@@ -37,6 +38,7 @@ async function fetchStats(packageName) {
             const owner = match[1];
             let repo = match[2];
             if (repo.endsWith('.git')) repo = repo.slice(0, -4);
+            url = `https://github.com/${owner}/${repo}`;
             const githubRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
             if (githubRes.ok) {
                 const ghData = await githubRes.json();
@@ -48,7 +50,7 @@ async function fetchStats(packageName) {
      console.error(`Failed to fetch repo info for ${packageName}:`, e.message);
   }
   
-  return { stars, downloads };
+  return { stars, downloads, url };
 }
 
 async function calculateSizes(directoryPath) {
@@ -131,7 +133,7 @@ function resolveNth(selector, j) {
 async function executeMeasured(page, measure, framework, benchmarkName, runIndex) {
   const traceFilename = `${framework}-${benchmarkName}-${runIndex}.json`;
   const tracePath = "trace.json";
-  const storagePath = path.join("results", "traces", traceFilename);
+  const storagePath = path.join("results", "public", "traces", traceFilename);
   
   // Clean up previous trace if it exists locally
   try {
@@ -207,7 +209,7 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
   await page.tracing.stop();
   
   // Move trace file to storage directory
-  fs.mkdirSync(path.join("results", "traces"), { recursive: true });
+  fs.mkdirSync(path.join("results", "public", "traces"), { recursive: true });
   await fs.promises.rename(tracePath, storagePath);
   
   return traceFilename;
@@ -244,7 +246,7 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
 
   // Ensure directories exist
   await fs.promises.mkdir("results/frameworks", { recursive: true });
-  await fs.promises.mkdir("results/traces", { recursive: true });
+  await fs.promises.mkdir("results/public/traces", { recursive: true });
 
   let frameworks;
   let benchmarks = allBenchmarks;
@@ -262,7 +264,7 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
 
   // Targeted cleanup of previous runs for the selected frameworks/benchmarks
   if (!argv.skipBenchmarks) {
-    const tracesDir = path.join("results", "traces");
+    const tracesDir = path.join("results", "public", "traces");
     const existingFiles = await fs.promises.readdir(tracesDir);
     for (const fw of frameworks) {
         for (const bench of benchmarks) {
@@ -318,6 +320,7 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
       const stats = await fetchStats(pkg.jsbenchmarks?.package);
       result.stars = stats.stars;
       result.downloads = stats.downloads;
+      result.gitHubUrl = stats.url;
 
       const implPath = `frameworks/${fw}/dist`;
       const sizes = await calculateSizes(`./${implPath}`);
@@ -389,7 +392,7 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
                 traceFile: traceFile
             };
             await fs.promises.writeFile(
-                path.join("results", "traces", `${traceFile}.meta.json`), 
+                path.join("results", "public", "traces", `${traceFile}.meta.json`),
                 JSON.stringify(meta, null, 2)
             );
 

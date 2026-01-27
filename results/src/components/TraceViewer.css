@@ -1,0 +1,114 @@
+.TraceViewer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.TraceViewer-modal {
+    background: white;
+    width: 90%;
+    max-width: 900px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+    .TraceViewer-modal {
+        background: #2a2a2a;
+        color: #ddd;
+    }
+}
+
+.TraceViewer-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    .TraceViewer-header {
+        border-bottom-color: #444;
+    }
+}
+
+.TraceViewer-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.TraceViewer-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: inherit;
+    padding: 0 5px;
+}
+
+.TraceViewer-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.TraceViewer-canvas {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .TraceViewer-canvas {
+        border-color: #444;
+    }
+}
+
+.TraceViewer-legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    font-size: 0.9em;
+}
+
+.TraceViewer-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.swatch {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+.swatch.yellow { background: #f1c453; }
+.swatch.purple { background: #998ec3; }
+.swatch.green { background: #77bd6e; }
+.swatch.red { background: #e05c5c; }
+
+.TraceViewer-loading, .TraceViewer-error {
+    padding: 40px;
+    text-align: center;
+}
+
+.TraceViewer-error {
+    color: #e05c5c;
+}

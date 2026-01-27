@@ -28,7 +28,7 @@ function analyzeTrace(trace) {
 
 (async () => {
   const frameworksDir = "results/frameworks";
-  const tracesDir = "results/traces";
+  const tracesDir = "results/public/traces";
   const outputPath = "results/src/data.ts";
 
   if (!fs.existsSync(frameworksDir)) {

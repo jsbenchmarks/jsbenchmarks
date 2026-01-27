@@ -1,6 +1,7 @@
 export interface Measurement {
   duration: number;
   memory: number;
+  traceFile: string;
 }
 
 export interface Benchmark {
@@ -28,6 +29,7 @@ export interface RawResult {
   version?: string;
   stars?: number;
   downloads?: number;
+  gitHubUrl?: string;
 }
 
 export interface Result extends RawResult {

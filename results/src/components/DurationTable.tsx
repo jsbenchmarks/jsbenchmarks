@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Result, SortConfig } from '../types';
 import { COMPOSITE_NAME, color } from '../utils';
 import './DurationTable.css';
@@ -37,13 +38,9 @@ export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort }: Dura
               <td className="DurationTable-td DurationTable-sticky-col">
                 <div className="DurationTable-name-content">
                   <strong>
-                    {row.website ? (
-                      <a href={row.website} target="_blank" rel="noopener noreferrer" className="DurationTable-link">
-                        {row.framework}
-                      </a>
-                    ) : (
-                      row.framework
-                    )}
+                    <Link to={`/framework/${row.framework}`} className="DurationTable-link">
+                      {row.framework}
+                    </Link>
                   </strong>
                   {row.version && <span className="DurationTable-version">v{row.version}</span>}
                 </div>
