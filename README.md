@@ -2,10 +2,26 @@
 
 Experimental JavaScript framework benchmark.
 
-## Description
-This project acts as a benchmarking tool for various JavaScript frameworks.
+**Note: benchmark is experimental. Expect issues (accuracy, poor fw impl) and changes.**
+
+## Introduction
+
+This project acts as a benchmarking tool for various JavaScript frameworks. It is heavily inspired by [krausest/js-frameworks-benchmark](https://github.com/krausest/js-frameworks-benchmark).
 
 <img width="2370" height="1172" alt="image" src="https://github.com/user-attachments/assets/8454ef37-e86f-44cc-afd4-84cbef78cb3f" />
+
+## Goals
+
+- Varied and common list reconciliation patterns.
+- Number of implementations must be kept to a reasonable number. This not only makes exploring the results easier but also makes it easier to evolve the benchmark over time (since changing the benchmark tests would require updating all implementations).
+
+## Implementation Requirements
+
+- Implementations must be from either very popular or very efficient frameworks (specific requirements tbd).
+- Frameworks must be actively maintained (specific requirements tbd).
+- Multiple submissions per framework are not allowed. Exceptions can be made if a framework has a feature or significant change in beta.
+- Table row must be a component -> we are testing efficiency of component abstractions.
+- No cheating or anything that would warrant a flag or note (except vanillajs) (implementations can't use manual dom manipulation or manual event delegation).
 
 ## Running Benchmarks Locally
 
