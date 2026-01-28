@@ -3,11 +3,13 @@ import { BundleTable } from './BundleTable';
 import { StatsTable } from './StatsTable';
 import { DurationTable } from './DurationTable';
 import { MemoryTable } from './MemoryTable';
+import { BenchmarkFilter } from './BenchmarkFilter';
 import { results as rawResults } from '../data';
 import type { RawResult, Result, SortConfig } from '../types';
 import { calculateResults, COMPOSITE_NAME } from '../utils';
 
 const inputData = rawResults as RawResult[];
+const allBenchmarkNames = inputData[0].benchmarks.map(b => b.name);
 
 export function Home() {
   const [durationSort, setDurationSort] = useState<SortConfig<string>>({ key: COMPOSITE_NAME, dir: 'asc' });
@@ -16,7 +18,9 @@ export function Home() {
   const [bundleSort, setBundleSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeBundle', dir: 'asc' });
   const [statsSort, setStatsSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeStats', dir: 'asc' });
 
-  const baseRows = useMemo(() => calculateResults(inputData), []);
+  const [selectedBenchmarks, setSelectedBenchmarks] = useState<Set<string>>(new Set(allBenchmarkNames));
+
+  const baseRows = useMemo(() => calculateResults(inputData, selectedBenchmarks), [selectedBenchmarks]);
 
   const handleDurationSort = (name: string) => {
     setDurationSort(prev => ({
@@ -45,6 +49,21 @@ export function Home() {
       dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc'
     }));
   };
+
+  const handleBenchmarkToggle = (name: string) => {
+    setSelectedBenchmarks(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => setSelectedBenchmarks(new Set(allBenchmarkNames));
+  const handleSelectNone = () => setSelectedBenchmarks(new Set());
 
   const durationRows = useMemo(() => {
     const copy = [...baseRows];
@@ -86,25 +105,7 @@ export function Home() {
     return copy;
   }, [baseRows, statsSort]);
 
-  const benchmarkNames = baseRows[0].benchmarks.map(b => b.name);
-
-  // Helper to wrap framework names in Links.
-  // NOTE: The table components currently render plain text or whatever is passed.
-  // I might need to modify the table components or wrapper them.
-  // The table components (DurationTable, etc.) iterate over rows.
-  // `DurationTable` likely renders `row.framework`.
-
-  // Actually, I need to check how DurationTable renders the framework name.
-  // If it renders just `row.framework`, I should probably pass a "renderFramework" prop or similar,
-  // OR modify the tables to accept a link.
-
-  // For now, let's keep it simple and just render the page. I'll modify tables later if needed to add links.
-  // Wait, I need links to the details page.
-  // "clicking on framework name takes you to a page to view more details"
-
-  // I'll need to update DurationTable/MemoryTable/BundleTable/StatsTable to link the framework name.
-  // Or I can just wrap the `row.framework` in the table.
-  // Let's look at `DurationTable` first.
+  const benchmarkNames = baseRows[0]?.benchmarks.map(b => b.name) ?? [];
 
   return (
     <main className="App-main">
@@ -126,6 +127,15 @@ export function Home() {
           </p>
         </div>
       </header>
+      
+      <BenchmarkFilter
+        benchmarks={allBenchmarkNames}
+        selected={selectedBenchmarks}
+        onChange={handleBenchmarkToggle}
+        onSelectAll={handleSelectAll}
+        onSelectNone={handleSelectNone}
+      />
+
       <h2 className="App-h2">Duration in ms ± 95% confidence interval</h2>
       <DurationTable
         rows={durationRows}

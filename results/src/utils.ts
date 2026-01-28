@@ -30,14 +30,16 @@ export function color(norm: number): string {
   return "oklch(80% 0.1 300)";
 }
 
-export function calculateResults(input: RawResult[]): Result[] {
+export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<string>): Result[] {
   const results: Result[] = input.map(result => ({
     ...result,
     version: result.framework === 'vanillajs' ? undefined : result.version,
-    benchmarks: result.benchmarks.map(bm => ({
-      ...bm,
-      measurements: bm.measurements.map(m => ({ ...m })),
-    })),
+    benchmarks: result.benchmarks
+      .filter(bm => !selectedBenchmarks || selectedBenchmarks.has(bm.name))
+      .map(bm => ({
+        ...bm,
+        measurements: bm.measurements.map(m => ({ ...m })),
+      })),
   }));
 
   const bestDurs: Record<string, number> = {};
