@@ -1,5 +1,6 @@
 import { track } from 'ripple';
 import { buildData as buildRawData, unitmap } from 'common/data';
+import { Row } from './Row.ripple';
 
 function createData(count) {
   const data = buildRawData(count);
@@ -56,33 +57,16 @@ export component App() {
         </thead>
         <tbody>
           for (const row of @rows) {
-            <tr
-              class={@selected === row.id ? 'selected' : ''}
-              onClick={() => { @selected = row.id; }}
-            >
-              <td>{row.id}</td>
-              <td>{row.name}</td>
-              <td>{(row.weight * @weightConversion).toFixed(1) + ' ' + unitmap.weight[@unitSystem]}</td>
-              <td>
-                const { height, width, depth } = row.dimensions;
-                {(height * @lengthConversion).toFixed(1) + ' x ' + (width * @lengthConversion).toFixed(1) + ' x ' + (depth * @lengthConversion).toFixed(1) + ' ' + unitmap.length[@unitSystem]}
-              </td>
-              <td>{(row.powerConsumption * @powerConversion).toFixed(1) + ' ' + unitmap.power[@unitSystem]}</td>
-              <td>{'$' + row.price.toFixed(2)}</td>
-              <td>{row.@availabilityStatus}</td>
-              <td>{row.rating.toFixed(1)}</td>
-              <td>
-                <button
-                  class="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    @rows = @rows.filter(r => r.id !== row.id);
-                  }}
-                >
-                  {"delete"}
-                </button>
-              </td>
-            </tr>
+            <Row
+              row={row}
+              selected={@selected}
+              onSelect={(id) => { @selected = id; }}
+              onDelete={(id) => { @rows = @rows.filter(r => r.id !== id); }}
+              weightConversion={@weightConversion}
+              unitSystem={@unitSystem}
+              lengthConversion={@lengthConversion}
+              powerConversion={@powerConversion}
+            />
           }
         </tbody>
       </table>
