@@ -41,10 +41,6 @@ npm run serve
 npm run bench
 ```
 
-Notes:
-
-- The benchmark runner loads each framework from `http://localhost:3000/frameworks/<framework>/dist/`, so each framework must be built before benchmarking.
-
 ## Running Results UI
 
 To view the benchmark results in a graphical interface:
