@@ -157,10 +157,7 @@ function insert() {
 
 function clear() {
   setHasRows(false);
-  const newBody = document.createElement("tbody");
-  newBody.id = "tbody";
-  table.replaceChild(newBody, tbody);
-  tbody = newBody;
+  tbody.textContent = "";
   selectedTr = null;
 }
 
