@@ -1,24 +1,27 @@
+:root {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --border-color: #30363d;
+  --table-header-bg: #161b22;
+  --row-hover-bg: rgba(255, 255, 255, 0.04);
+  --link-color: #58a6ff;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", Arial, sans-serif;
+}
+
 body {
   margin: 0;
   overflow-y: scroll;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Ubuntu",
-    "Cantarell",
-    "Fira Sans",
-    "Droid Sans",
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #484f58 transparent;
 }
 
 main {
@@ -33,22 +36,25 @@ main {
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background: #ccc;
-  border-radius: 5px;
+  background: var(--table-header-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   margin-bottom: 10px;
 
   h1 {
     margin: 0;
+    color: #fff;
   }
 }
 
 button {
   padding: 5px 10px;
-  background: #555;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
+  background: #21262d;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   cursor: pointer;
+  transition: 0.2s;
 
   &.small {
     padding: 2px 4px;
@@ -56,11 +62,14 @@ button {
   }
 
   &:hover {
-    background: #333;
+    background: #30363d;
+    border-color: #8b949e;
   }
 
   &:focus {
-    background: #111;
+    background: #30363d;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
   }
 }
 
@@ -72,21 +81,23 @@ button {
 table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 12px;
+  font-size: 13px;
+  color: var(--text-color);
 
   tr:hover td {
-    background: #eee;
+    background: var(--row-hover-bg);
   }
 
   tr.selected td {
-    background: #ddd;
+    background: rgba(56, 139, 253, 0.15);
   }
 
   td,
   th {
-    padding: 3px 5px;
+    padding: 8px 12px;
     text-align: left;
     white-space: nowrap;
+    border-bottom: 1px solid var(--border-color);
 
     button {
       margin-left: 5px;
@@ -100,6 +111,12 @@ table {
       text-align: right;
       width: 1%;
     }
+  }
+
+  th {
+    background-color: var(--table-header-bg);
+    color: #fff;
+    font-weight: 600;
   }
 }
 
