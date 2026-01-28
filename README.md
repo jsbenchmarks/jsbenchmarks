@@ -9,18 +9,17 @@ This project acts as a benchmarking tool for various JavaScript frameworks. It i
 
 ## Goals and Motivation
 
-- Varied and common list reconciliation patterns.
-- The number of implementations must be kept to a reasonable number. This not only makes exploring the results easier but also makes it easier to evolve the benchmark over time (since changing the benchmark tests would require updating all implementations).
+- **Evaluate Common Patterns:** This benchmark aims to evaluate varied and common list reconciliation patterns across different frameworks.
+- **Maintainability:** To facilitate result exploration and enable rapid evolution of the benchmark, the number of implementations is intentionally limited. This approach minimizes the maintenance burden when updating benchmark tests.
 
 ## Implementation Requirements
 
-- Implementations must be from either very popular or very efficient frameworks (specific requirements TBD).
-- Frameworks must be actively maintained (specific requirements TBD).
-- Multiple submissions per framework are not allowed. Exceptions can be made if a framework has a feature or significant change in beta.
-- Table row must be a component -> we are testing efficiency of component abstractions.
-- No cheating or anything that would warrant a flag or note (except VanillaJS). Implementations can't use manual DOM manipulation or manual event delegation.
+- **Eligibility:** Frameworks must be either widely adopted or demonstrate exceptional performance efficiency. Only actively maintained frameworks are eligible (specific criteria TBD).
+- **Single Submission:** Generally, only one submission per framework is permitted. Exceptions may be granted for significant beta features or major architectural changes.
+- **Component Abstraction:** Each table row must be implemented as a distinct component to accurately test the efficiency of the framework's component abstraction.
+- **Idiomatic Code:** Implementations must adhere to idiomatic framework practices. "Cheating" techniques, such as manual DOM manipulation or event delegation (outside of Vanilla JS), are strictly prohibited.
 
-> **Note:** This benchmark is experimental. Expect issues (accuracy, poor fw impl) and changes.
+> **Note:** This benchmark is currently experimental. Users should anticipate potential inaccuracies, sub-optimal framework implementations, and frequent updates.
 
 ## Running Benchmarks Locally
 
