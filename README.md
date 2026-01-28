@@ -2,7 +2,7 @@
 
 Experimental JavaScript framework benchmark.
 
-**Note: benchmark is experimental. Expect issues (accuracy, poor fw impl) and changes.**
+**Note: This benchmark is experimental. Expect potential issues with accuracy or framework implementations, and frequent changes.**
 
 ## Introduction
 
@@ -12,16 +12,16 @@ This project acts as a benchmarking tool for various JavaScript frameworks. It i
 
 ## Goals
 
-- Varied and common list reconciliation patterns.
-- Number of implementations must be kept to a reasonable number. This not only makes exploring the results easier but also makes it easier to evolve the benchmark over time (since changing the benchmark tests would require updating all implementations).
+- **Benchmark common patterns**: Focus on varied and representative list reconciliation patterns found in real-world applications.
+- **Maintainable scope**: Limit the number of implementations to a reasonable set. This facilitates easier exploration of results and allows the benchmark suite to evolve without the burden of updating a vast number of implementations.
 
 ## Implementation Requirements
 
-- Implementations must be from either very popular or very efficient frameworks (specific requirements tbd).
-- Frameworks must be actively maintained (specific requirements tbd).
-- Multiple submissions per framework are not allowed. Exceptions can be made if a framework has a feature or significant change in beta.
-- Table row must be a component -> we are testing efficiency of component abstractions.
-- No cheating or anything that would warrant a flag or note (except vanillajs) (implementations can't use manual dom manipulation or manual event delegation).
+- **Framework Selection**: Implementations must use frameworks that are either highly popular or notably efficient. (Specific metrics TBD).
+- **Maintenance**: Frameworks must be actively maintained. (Specific criteria TBD).
+- **Single Submission**: Only one submission per framework is allowed. Exceptions may be granted for major version changes or significant features in beta.
+- **Component Structure**: Each table row must be implemented as a separate component. This ensures the benchmark correctly measures the efficiency of the framework's component abstraction.
+- **Idiomatic Code**: Implementations must follow idiomatic patterns. "Cheating" techniques such as manual DOM manipulation or manual event delegation are prohibited, with the sole exception of the Vanilla JS implementation.
 
 ## Running Benchmarks Locally
 
