@@ -2,8 +2,6 @@
 
 Experimental JavaScript framework benchmark.
 
-**Note: This benchmark is experimental. Expect potential issues with accuracy or framework implementations, and frequent changes.**
-
 ## Introduction
 
 This project acts as a benchmarking tool for various JavaScript frameworks. It is heavily inspired by [krausest/js-frameworks-benchmark](https://github.com/krausest/js-frameworks-benchmark).
@@ -20,7 +18,7 @@ This project acts as a benchmarking tool for various JavaScript frameworks. It i
 - **Framework Selection**: Implementations must use frameworks that are either highly popular or notably efficient. (Specific metrics TBD).
 - **Maintenance**: Frameworks must be actively maintained. (Specific criteria TBD).
 - **Single Submission**: Only one submission per framework is allowed. Exceptions may be granted for major version changes or significant features in beta.
-- **Component Structure**: Each table row must be implemented as a separate component. This ensures the benchmark correctly measures the efficiency of the framework's component abstraction.
+- **Component Structure**: Table rows must be implemented as a separate component. This ensures the benchmark correctly measures the efficiency of the framework's component abstraction.
 - **Idiomatic Code**: Implementations must follow idiomatic patterns. "Cheating" techniques such as manual DOM manipulation or manual event delegation are prohibited, with the sole exception of the Vanilla JS implementation.
 
 ## Running Benchmarks Locally
@@ -72,7 +70,7 @@ npm run bench -- -f react,vue
 npm run bench -- -b create,select,clear
 ```
 
-## Submission Requirements
+## Contributing
 
 For each framework submission under `frameworks/<name>/`:
 
