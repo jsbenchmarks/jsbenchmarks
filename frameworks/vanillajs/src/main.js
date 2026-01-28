@@ -62,6 +62,7 @@ function createRow(row) {
   tr._d = dimsNode;
   tr._p = powerNode;
   tr._s = statusNode;
+  tr._availabilityStatus = row.availabilityStatus;
 
   // Precompute both unit formats so toggling is just swapping strings.
   const dim = row.dimensions;
@@ -217,7 +218,8 @@ function restock() {
   const rows = tbody.children;
   for (let i = 0; i < rows.length; i++) {
     const tr = rows[i];
-    if (tr._s.nodeValue === "Out of Stock") {
+    if (tr._availabilityStatus === "Out of Stock") {
+      tr._availabilityStatus = "In Stock";
       tr._s.nodeValue = "In Stock";
     }
   }
