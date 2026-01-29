@@ -6,7 +6,7 @@ Experimental JavaScript framework benchmark.
 
 This project acts as a benchmarking tool for various JavaScript frameworks. It is heavily inspired by [krausest/js-framework-benchmark](https://github.com/krausest/js-framework-benchmark).
 
-![Stream updates demo](stream-updates.gif)
+![Stream updates demo](streamupdates.gif)
 
 ## Goals
 
