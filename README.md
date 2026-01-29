@@ -1,10 +1,6 @@
 # JS Benchmarks
 
-Experimental JavaScript framework benchmark.
-
-## Introduction
-
-This project acts as a benchmarking tool for various JavaScript frameworks. It is heavily inspired by [krausest/js-framework-benchmark](https://github.com/krausest/js-framework-benchmark).
+Experimental JavaScript framework benchmark. You can view the current results [here](https://jsbenchmarks.com).
 
 ![Stream updates demo](streamupdates.gif)
 
@@ -65,6 +61,10 @@ Examples:
 npm run bench -- -f react,vue
 npm run bench -- -b create,select,clear
 ```
+
+## Inspiration
+
+This project is heavily inspired by [krausest/js-framework-benchmark](https://github.com/krausest/js-framework-benchmark).
 
 ## Contributing
 
