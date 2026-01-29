@@ -1,11 +1,15 @@
 /** @jsxImportSource preact */
 import { computed, signal } from '@preact/signals';
 import { buildData } from 'common/data';
+import { streamUpdates } from 'common/streaming';
 import { Row } from './row.jsx';
 
 export const rows = signal([]);
 export const selected = signal(null);
 export const unitSystem = signal('metric');
+export const isStreaming = signal(false);
+
+let stopStreaming = null;
 
 export const weightConversion = computed(() =>
   unitSystem.value === 'metric' ? 1 : 2.20462
@@ -18,12 +22,61 @@ export const lengthConversion = computed(() =>
 );
 
 export function App() {
+  const create = () => {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      isStreaming.value = false;
+    }
+    rows.value = buildData(1000);
+  };
+
+  const stream = () => {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      isStreaming.value = false;
+      return;
+    }
+    isStreaming.value = true;
+    rows.value = buildData(25);
+    stopStreaming = streamUpdates((updates) => {
+      const newRows = [...rows.value];
+      const idMap = new Map();
+      for (let i = 0; i < newRows.length; i++) {
+        idMap.set(newRows[i].id, i);
+      }
+      for (const update of updates) {
+        const idx = idMap.get(update.id);
+        if (idx !== undefined) {
+          const row = newRows[idx];
+          newRows[idx] = { 
+            ...row, 
+            price: update.price || row.price,
+            availabilityStatus: update.availabilityStatus || row.availabilityStatus
+          };
+        }
+      }
+      rows.value = newRows;
+    });
+  };
+
+  const clear = () => {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      isStreaming.value = false;
+    }
+    rows.value = [];
+  };
+
   return (
     <main>
       <div class="header">
         <h1>Preact</h1>
         <div class="actions">
-          <button id="create" onClick={() => (rows.value = buildData(1000))}>Create</button>
+          <button id="create" onClick={create}>Create</button>
+          <button id="stream" onClick={stream}>{isStreaming.value ? 'Stop' : 'Stream'}</button>
           <button id="reverse" onClick={() => (rows.value = [...rows.value].toReversed())}>Reverse</button>
           <button
             id="insert"
@@ -73,7 +126,7 @@ export function App() {
           >
             Restock
           </button>
-          <button id="clear" onClick={() => (rows.value = [])}>Clear</button>
+          <button id="clear" onClick={clear}>Clear</button>
         </div>
       </div>
 

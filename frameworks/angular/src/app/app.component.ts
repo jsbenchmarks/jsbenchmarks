@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { buildData } from 'common/data';
+import { streamUpdates } from 'common/streaming';
 import { RowComponent } from './row.component';
 
 @Component({
@@ -13,6 +14,7 @@ import { RowComponent } from './row.component';
         <h1>Angular</h1>
         <div class="actions">
           <button id="create" (click)="create()">Create</button>
+          <button id="stream" (click)="stream()">{{ stopStreaming ? 'Stop' : 'Stream' }}</button>
           <button id="reverse" (click)="reverse()">Reverse</button>
           <button id="insert" (click)="insert()">Insert</button>
           <button id="prepend" (click)="prepend()">Prepend</button>
@@ -66,13 +68,49 @@ export class AppComponent {
   rows = signal<any[]>([]);
   selected = signal<number | null>(null);
   unitSystem = signal<'metric' | 'imperial'>('metric');
+  stopStreaming: (() => void) | null = null;
 
   weightConversion = computed(() => (this.unitSystem() === 'metric' ? 1 : 2.20462));
   powerConversion = computed(() => (this.unitSystem() === 'metric' ? 1 : 0.00134102));
   lengthConversion = computed(() => (this.unitSystem() === 'metric' ? 1 : 0.393701));
 
   create() {
+    if (this.stopStreaming) {
+      this.stopStreaming();
+      this.stopStreaming = null;
+    }
     this.rows.set(buildData(1000));
+  }
+
+  stream() {
+    if (this.stopStreaming) {
+      this.stopStreaming();
+      this.stopStreaming = null;
+      return;
+    }
+    this.rows.set(buildData(25));
+    
+    this.stopStreaming = streamUpdates((updates: any[]) => {
+      this.rows.update(currentRows => {
+        const newRows = [...currentRows];
+        const idMap = new Map();
+        for (let i = 0; i < newRows.length; i++) {
+          idMap.set(newRows[i].id, i);
+        }
+        for (const update of updates) {
+          const idx = idMap.get(update.id);
+          if (idx !== undefined) {
+            const row = newRows[idx];
+            newRows[idx] = { 
+              ...row, 
+              price: update.price || row.price,
+              availabilityStatus: update.availabilityStatus || row.availabilityStatus
+            };
+          }
+        }
+        return newRows;
+      });
+    });
   }
 
   reverse() {
@@ -108,6 +146,10 @@ export class AppComponent {
   }
 
   clear() {
+    if (this.stopStreaming) {
+      this.stopStreaming();
+      this.stopStreaming = null;
+    }
     this.rows.set([]);
   }
 

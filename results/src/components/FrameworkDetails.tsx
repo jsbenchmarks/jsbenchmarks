@@ -58,11 +58,12 @@ export function FrameworkDetails() {
                                 <td
                                     key={i}
                                     className="FrameworkDetails-cell"
-                                    title="Click to view trace"
-                                    onClick={() => setSelectedTrace(m.traceFile)}
+                                    title={m.traceFile ? "Click to view trace" : undefined}
+                                    onClick={() => m.traceFile && setSelectedTrace(m.traceFile)}
+                                    style={{ cursor: m.traceFile ? 'pointer' : 'default' }}
                                 >
                                     <div className="FrameworkDetails-duration">
-                                        {m.duration.toFixed(1)}
+                                        {m.duration > 0 ? m.duration.toFixed(1) : (m.cpu ? `${m.cpu.toFixed(1)}%` : '-')}
                                     </div>
                                 </td>
                             );

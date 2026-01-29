@@ -13,14 +13,16 @@ function analyzeTrace(trace) {
     e.name === 'bench-dom-done'
   );
 
-  if (!clickEvent || !markEvent) return Infinity;
+  // Not all benchmarks emit a mark (e.g. duration-based benchmarks like stream).
+  // Return 0 to mean "not applicable".
+  if (!clickEvent || !markEvent) return 0;
 
   const targetEvent = events.find(e =>
     e.name === 'Commit' &&
     e.ts >= markEvent.ts
   );
 
-  if (!targetEvent) return Infinity;
+  if (!targetEvent) return 0;
 
   // Use the end of the event duration
   return (targetEvent.ts + (targetEvent.dur || 0) - clickEvent.ts) / 1000;
@@ -64,8 +66,12 @@ function analyzeTrace(trace) {
         continue;
       }
 
-      const tracePath = path.join(tracesDir, meta.traceFile);
-      if (fs.existsSync(tracePath)) {
+      let tracePath = null;
+      if (meta.traceFile) {
+        tracePath = path.join(tracesDir, meta.traceFile);
+      }
+
+      if (tracePath && fs.existsSync(tracePath)) {
         try {
           const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
           meta.duration = analyzeTrace(traceData);
@@ -76,7 +82,9 @@ function analyzeTrace(trace) {
           meta.duration = 0;
         }
       } else {
-        console.warn(`Warning: Trace file ${tracePath} not found for meta ${metaFile}`);
+        if (meta.traceFile) {
+            console.warn(`Warning: Trace file ${tracePath} not found for meta ${metaFile}`);
+        }
         meta.duration = 0;
       }
 
@@ -91,6 +99,7 @@ function analyzeTrace(trace) {
         bench.measurements.push({
           traceFile: meta.traceFile,
           memory: meta.memory,
+          cpu: meta.cpu,
           duration: meta.duration
         });
       }
@@ -116,7 +125,10 @@ function analyzeTrace(trace) {
     // or just leave them as is. Usually order doesn't matter for stats, but nice for stability.
     for (const b of result.benchmarks) {
       b.measurements.sort((m1, m2) => {
-        const getRun = (s) => parseInt(s.match(/-(\d+)\.json$/)?.[1] || "0");
+        const getRun = (s) => {
+          if (!s) return 0;
+          return parseInt(s.match(/-(\d+)\.json$/)?.[1] || "0");
+        };
         return getRun(m1.traceFile) - getRun(m2.traceFile);
       });
     }

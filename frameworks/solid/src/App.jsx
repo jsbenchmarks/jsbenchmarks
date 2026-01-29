@@ -1,4 +1,5 @@
 import { buildData as buildRawData } from 'common/data';
+import { streamUpdates } from 'common/streaming';
 import { createSelector, createSignal, For, Show } from 'solid-js';
 import Row from './Row';
 
@@ -13,6 +14,8 @@ function buildData(cnt) {
 export const [rows, setRows] = createSignal([]);
 export const [selected, setSelected] = createSignal(null);
 export const [unitSystem, setUnitSystem] = createSignal('metric');
+export const [isStreaming, setIsStreaming] = createSignal(false);
+let stopStreaming = null;
 
 export const weightConversion = () => unitSystem() === 'metric' ? 1 : 2.20462;
 export const powerConversion = () => unitSystem() === 'metric' ? 1 : 0.00134102;
@@ -21,12 +24,56 @@ export const lengthConversion = () => unitSystem() === 'metric' ? 1 : 0.393701;
 export const isSelected = createSelector(selected);
 
 function App() {
+  const create = () => {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      setIsStreaming(false);
+    }
+    setRows(buildData(1000));
+  };
+
+  const stream = () => {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      setIsStreaming(false);
+      return;
+    }
+    setIsStreaming(true);
+    setRows(buildData(25));
+    stopStreaming = streamUpdates((updates) => {
+        const currentRows = rows();
+        const idMap = new Map();
+        for (const row of currentRows) {
+            idMap.set(row.id, row);
+        }
+        for (const update of updates) {
+            const row = idMap.get(update.id);
+            if (row) {
+                if (update.price) row.price[1](update.price);
+                if (update.availabilityStatus) row.availabilityStatus[1](update.availabilityStatus);
+            }
+        }
+    });
+  };
+
+  const clear = () => {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      setIsStreaming(false);
+    }
+    setRows([]);
+  };
+
   return (
     <main>
       <div class="header">
         <h1>Solid</h1>
         <div class="actions">
-          <button id="create" onClick={() => setRows(buildData(1000))}>Create</button>
+          <button id="create" onClick={create}>Create</button>
+          <button id="stream" onClick={stream}>{isStreaming() ? 'Stop' : 'Stream'}</button>
           <button id="reverse" onClick={() => setRows([...rows()].toReversed())}>Reverse</button>
           <button id="insert" onClick={() => setRows([
             ...rows().slice(0, 10),
@@ -39,7 +86,7 @@ function App() {
           <button id="filter" onClick={() => setRows(rows().filter((d) => d.id % 2))}>Filter</button>
           <button id="units" onClick={() => setUnitSystem(unitSystem() === 'imperial' ? 'metric' : 'imperial')}>Units</button>
           <button id="restock" onClick={() => rows().forEach(r => r.availabilityStatus[0]() === "Out of Stock" ? r.availabilityStatus[1]("In Stock") : null)}>Restock</button>
-          <button id="clear" onClick={() => setRows([])}>Clear</button>
+          <button id="clear" onClick={clear}>Clear</button>
         </div>
       </div>
 

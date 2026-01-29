@@ -33,32 +33,39 @@ export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort }: Dura
           </tr>
         </thead>
         <tbody>
-          {rows.map(row => (
-            <tr key={row.framework} className="DurationTable-tr">
-              <td className="DurationTable-td DurationTable-sticky-col">
-                <div className="DurationTable-name-content">
-                  <strong>
-                    <Link to={`/framework/${row.framework}`} className="DurationTable-link">
-                      {row.framework}
-                    </Link>
-                  </strong>
-                  {row.version && <span className="DurationTable-version">v{row.version}</span>}
-                </div>
-              </td>
-              {row.benchmarks.map(bm => (
-                <td
-                  key={bm.name}
-                  className="DurationTable-td"
-                  style={{ color: color(bm.normalDuration!) }}
-                >
-                  {bm.duration ? `${bm.duration.toFixed(1)} ± ${bm.durationMOE?.toFixed(1)} ` : ""}
-                  {bm.name === COMPOSITE_NAME
-                    ? `${bm.normalDuration?.toFixed(2)}${bm.normalDurationMOE !== undefined ? ` ± ${bm.normalDurationMOE.toFixed(2)}` : ''}`
-                    : `(${bm.normalDuration?.toFixed(2)})`}
+          {rows.map(row => {
+            const byName = new Map(row.benchmarks.map(b => [b.name, b]));
+            return (
+              <tr key={row.framework} className="DurationTable-tr">
+                <td className="DurationTable-td DurationTable-sticky-col">
+                  <div className="DurationTable-name-content">
+                    <strong>
+                      <Link to={`/framework/${row.framework}`} className="DurationTable-link">
+                        {row.framework}
+                      </Link>
+                    </strong>
+                    {row.version && <span className="DurationTable-version">v{row.version}</span>}
+                  </div>
                 </td>
-              ))}
-            </tr>
-          ))}
+                {benchmarkNames.map(name => {
+                  const bm = byName.get(name);
+                  const norm = bm?.normalDuration;
+                  return (
+                    <td
+                      key={name}
+                      className="DurationTable-td"
+                      style={norm ? { color: color(norm) } : {}}
+                    >
+                      {bm?.duration ? `${bm.duration.toFixed(1)} ± ${bm.durationMOE?.toFixed(1)} ` : ""}
+                      {bm?.name === COMPOSITE_NAME
+                        ? (bm?.normalDuration ? `${bm.normalDuration.toFixed(2)}${bm.normalDurationMOE !== undefined ? ` ± ${bm.normalDurationMOE.toFixed(2)}` : ''}` : "")
+                        : (bm?.normalDuration ? `(${bm.normalDuration.toFixed(2)})` : "")}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

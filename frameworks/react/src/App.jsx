@@ -1,11 +1,65 @@
 import { buildData } from 'common/data';
-import { useMemo, useState } from 'react';
+import { streamUpdates } from 'common/streaming';
+import { useMemo, useState, useRef } from 'react';
 import Row from './Row';
 
 export default function App() {
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState(null);
   const [unitSystem, setUnitSystem] = useState('metric');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const stopStreaming = useRef(null);
+
+  const create = () => {
+    if (stopStreaming.current) {
+      stopStreaming.current();
+      stopStreaming.current = null;
+      setIsStreaming(false);
+    }
+    setRows(buildData(1000));
+  };
+
+  const stream = () => {
+    if (stopStreaming.current) {
+      stopStreaming.current();
+      stopStreaming.current = null;
+      setIsStreaming(false);
+      return;
+    }
+    setIsStreaming(true);
+    setRows(buildData(25));
+    stopStreaming.current = streamUpdates((updates) => {
+      const updatesClone = [...updates];
+      setRows(currentRows => {
+        const newRows = [...currentRows];
+        const idMap = new Map();
+        for (let i = 0; i < newRows.length; i++) {
+          idMap.set(newRows[i].id, i);
+        }
+        for (const update of updatesClone) {
+          const idx = idMap.get(update.id);
+          if (idx !== undefined) {
+            const row = newRows[idx];
+            newRows[idx] = { 
+              ...row, 
+              price: update.price || row.price,
+              availabilityStatus: update.availabilityStatus || row.availabilityStatus
+            };
+          }
+        }
+        return newRows;
+      });
+    });
+  };
+
+  const clear = () => {
+    if (stopStreaming.current) {
+      stopStreaming.current();
+      stopStreaming.current = null;
+      setIsStreaming(false);
+    }
+    setRows([]);
+  };
 
   const weightConversion = useMemo(
     () => (unitSystem === 'metric' ? 1 : 2.20462),
@@ -27,7 +81,8 @@ export default function App() {
       <div className="header">
         <h1>React</h1>
         <div className="actions">
-          <button id="create" onClick={() => setRows(buildData(1000))}>Create</button>
+          <button id="create" onClick={create}>Create</button>
+          <button id="stream" onClick={stream}>{isStreaming ? 'Stop' : 'Stream'}</button>
           <button id="reverse" onClick={() => setRows([...rows].toReversed())}>Reverse</button>
           <button id="insert" onClick={() =>
             setRows([...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)])
@@ -58,7 +113,7 @@ export default function App() {
           }>
             Restock
           </button>
-          <button id="clear" onClick={() => setRows([])}>Clear</button>
+          <button id="clear" onClick={clear}>Clear</button>
         </div>
       </div>
 

@@ -33,32 +33,39 @@ export const MemoryTable = ({ rows, benchmarkNames, sortConfig, onSort }: Memory
           </tr>
         </thead>
         <tbody>
-          {rows.map(row => (
-            <tr key={row.framework} className="MemoryTable-tr">
-              <td className="MemoryTable-td MemoryTable-sticky-col">
-                <div className="MemoryTable-name-content">
-                  <strong>
-                    <Link to={`/framework/${row.framework}`} className="MemoryTable-link">
-                      {row.framework}
-                    </Link>
-                  </strong>
-                  {row.version && <span className="MemoryTable-version">v{row.version}</span>}
-                </div>
-              </td>
-              {row.benchmarks.map(bm => (
-                <td
-                  key={bm.name}
-                  className="MemoryTable-td"
-                  style={{ color: color(bm.normalMemory!) }}
-                >
-                  {bm.memory ? ` ${(bm.memory / 1e6).toFixed(1)} ± ${(bm.memoryMOE! / 1e6).toFixed(2)} ` : ""}
-                  {bm.name === COMPOSITE_NAME
-                    ? `${bm.normalMemory?.toFixed(2)}${bm.normalMemoryMOE !== undefined ? ` ± ${bm.normalMemoryMOE.toFixed(2)}` : ''}`
-                    : `(${bm.normalMemory?.toFixed(2)})`}
+          {rows.map(row => {
+            const byName = new Map(row.benchmarks.map(b => [b.name, b]));
+            return (
+              <tr key={row.framework} className="MemoryTable-tr">
+                <td className="MemoryTable-td MemoryTable-sticky-col">
+                  <div className="MemoryTable-name-content">
+                    <strong>
+                      <Link to={`/framework/${row.framework}`} className="MemoryTable-link">
+                        {row.framework}
+                      </Link>
+                    </strong>
+                    {row.version && <span className="MemoryTable-version">v{row.version}</span>}
+                  </div>
                 </td>
-              ))}
-            </tr>
-          ))}
+                {benchmarkNames.map(name => {
+                  const bm = byName.get(name);
+                  const norm = bm?.normalMemory;
+                  return (
+                    <td
+                      key={name}
+                      className="MemoryTable-td"
+                      style={norm ? { color: color(norm) } : {}}
+                    >
+                      {bm?.memory ? ` ${(bm.memory / 1e6).toFixed(1)} ± ${(bm.memoryMOE! / 1e6).toFixed(2)} ` : ""}
+                      {bm?.name === COMPOSITE_NAME
+                        ? (bm?.normalMemory ? `${bm.normalMemory.toFixed(2)}${bm.normalMemoryMOE !== undefined ? ` ± ${bm.normalMemoryMOE.toFixed(2)}` : ''}` : "")
+                        : (bm?.normalMemory ? `(${bm.normalMemory.toFixed(2)})` : "")}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

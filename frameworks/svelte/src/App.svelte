@@ -1,10 +1,61 @@
 <script>
   import { buildData } from "../../../common/data";
+  import { streamUpdates } from "../../../common/streaming";
   import Row from "./Row.svelte";
 
   import { unitSystem } from "./state.svelte";
 
   let rows = $state.raw([]);
+  let isStreaming = $state(false);
+  let stopStreaming = null;
+
+  function create() {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      isStreaming = false;
+    }
+    rows = buildData(1000);
+  }
+
+  function stream() {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      isStreaming = false;
+      return;
+    }
+    isStreaming = true;
+    rows = buildData(25);
+    stopStreaming = streamUpdates((updates) => {
+      const newRows = [...rows];
+      const idMap = new Map();
+      for (let i = 0; i < newRows.length; i++) {
+        idMap.set(newRows[i].id, i);
+      }
+      for (const update of updates) {
+        const idx = idMap.get(update.id);
+        if (idx !== undefined) {
+          const row = newRows[idx];
+          newRows[idx] = { 
+            ...row, 
+            price: update.price || row.price,
+            availabilityStatus: update.availabilityStatus || row.availabilityStatus
+          };
+        }
+      }
+      rows = newRows;
+    });
+  }
+
+  function clear() {
+    if (stopStreaming) {
+      stopStreaming();
+      stopStreaming = null;
+      isStreaming = false;
+    }
+    rows = [];
+  }
 
   function remove(row) {
     rows = rows.filter((r) => r !== row);
@@ -15,8 +66,11 @@
   <div class="header">
     <h1>Svelte</h1>
     <div class="actions">
-      <button id="create" onclick={() => (rows = buildData(1000))}
+      <button id="create" onclick={create}
         >Create</button
+      >
+      <button id="stream" onclick={stream}
+        >{isStreaming ? 'Stop' : 'Stream'}</button
       >
       <button id="reverse" onclick={() => (rows = rows.toReversed())}>Reverse</button>
       <button
@@ -56,7 +110,7 @@
               : r
           ))}>Restock</button
       >
-      <button id="clear" onclick={() => (rows = [])}>Clear</button>
+      <button id="clear" onclick={clear}>Clear</button>
     </div>
   </div>
 

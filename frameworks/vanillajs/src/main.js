@@ -1,7 +1,9 @@
 import { buildData, unitmap } from "common/data";
+import { streamUpdates } from "common/streaming";
 
 let selectedTr = null;
 let isMetric = true;
+let stopStreaming = null;
 
 const table = document.querySelector("table");
 let tbody = document.querySelector("tbody");
@@ -62,6 +64,7 @@ function createRow(row) {
   tr._d = dimsNode;
   tr._p = powerNode;
   tr._s = statusNode;
+  tr._price = priceNode;
   tr._availabilityStatus = row.availabilityStatus;
 
   // Precompute both unit formats so toggling is just swapping strings.
@@ -119,6 +122,10 @@ function createRow(row) {
 }
 
 function create() {
+  if (stopStreaming) {
+    stopStreaming();
+    stopStreaming = null;
+  }
   const rows = buildData(1000);
   selectedTr = null;
 
@@ -132,6 +139,51 @@ function create() {
   table.replaceChild(nextBody, tbody);
   tbody = nextBody;
   setHasRows(true);
+}
+
+function stream(e) {
+  if (stopStreaming) {
+    e.target.textContent = "Stream";
+    stopStreaming();
+    stopStreaming = null;
+    return;
+  }
+  e.target.textContent = "Stop";
+  const rows = buildData(25);
+  selectedTr = null;
+
+  const nextBody = document.createElement("tbody");
+  nextBody.id = "tbody";
+
+  for (let i = 0; i < rows.length; i++) {
+    nextBody.appendChild(createRow(rows[i]));
+  }
+
+  table.replaceChild(nextBody, tbody);
+  tbody = nextBody;
+  setHasRows(true);
+
+  stopStreaming = streamUpdates((updates) => {
+    const trs = tbody.children;
+    // Cache map for faster lookups
+    const map = new Map();
+    for (let i = 0; i < trs.length; i++) {
+      map.set(trs[i]._id, trs[i]);
+    }
+    
+    for (const update of updates) {
+      const tr = map.get(update.id);
+      if (tr) {
+        if (update.price) {
+          tr._price.nodeValue = "$" + update.price.toFixed(2);
+        }
+        if (update.availabilityStatus) {
+          tr._availabilityStatus = update.availabilityStatus;
+          tr._s.nodeValue = update.availabilityStatus;
+        }
+      }
+    }
+  });
 }
 
 function append() {
@@ -157,6 +209,10 @@ function insert() {
 }
 
 function clear() {
+  if (stopStreaming) {
+    stopStreaming();
+    stopStreaming = null;
+  }
   setHasRows(false);
   tbody.textContent = "";
   selectedTr = null;
@@ -245,6 +301,7 @@ table.onclick = e => {
 };
 
 document.getElementById("create").onclick = create;
+document.getElementById("stream").onclick = stream;
 document.getElementById("reverse").onclick = reverse;
 document.getElementById("insert").onclick = insert;
 document.getElementById("prepend").onclick = prepend;

@@ -7,7 +7,7 @@ const productNouns = [
 ];
 
 let rand = arr => arr[Math.floor(Math.random() * arr.length)];
-let id = 0;
+export let currentId = 0;
 
 /**
  * Builds an array of mock product specification items.
@@ -21,7 +21,7 @@ export function buildData(count) {
     const heightCm = Math.random() * 80 + 10;
     const depthCm = Math.random() * 30 + 3;
     items[i] = {
-      id: id++,
+      id: currentId++,
       name: `${rand(productAdjectives)} ${rand(productNouns)} ${Math.floor(Math.random() * 900) + 100}`,
       weight: Math.random() * 20 + 0.1,
       dimensions: {

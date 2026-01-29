@@ -44,6 +44,7 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
 
   const bestDurs: Record<string, number> = {};
   const bestMems: Record<string, number> = {};
+  const bestCpus: Record<string, number> = {};
   let bestGzipBund = 1e12;
   let bestRawBund = 1e12;
   let bestBrotliBund = 1e12;
@@ -84,9 +85,28 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
       const memorySEM = effectiveSampleSize > 0 ? (bm.memoryStdDev / Math.sqrt(effectiveSampleSize)) : 0;
       bm.memoryMOE = zScore95 * memorySEM;
 
-      bestDurs[bm.name] = Math.min(bestDurs[bm.name] ?? 1e12, bm.duration);
-      bestMems[bm.name] = Math.min(bestMems[bm.name] ?? 1e12, bm.memory);
-    }
+      // CPU
+      const cpuMeasurements = bm.measurements.filter(m => m.cpu !== undefined);
+       if (cpuMeasurements.length > 0) {
+         bm.cpu = cpuMeasurements.reduce((sum, cur) => sum + (cur.cpu || 0), 0) / cpuMeasurements.length;
+        const cpuVar = cpuMeasurements.length > 1
+          ? cpuMeasurements.reduce((sum, cur) => sum + Math.pow((cur.cpu || 0) - bm.cpu!, 2), 0) / (cpuMeasurements.length - 1)
+          : 0;
+        bm.cpuStdDev = Math.sqrt(cpuVar);
+        const cpuSEM = bm.cpuStdDev / Math.sqrt(cpuMeasurements.length);
+        bm.cpuMOE = zScore95 * cpuSEM;
+         if (bm.cpu > 0) {
+           bestCpus[bm.name] = Math.min(bestCpus[bm.name] ?? 1e12, bm.cpu);
+         }
+       }
+
+       if (bm.duration > 0) {
+         bestDurs[bm.name] = Math.min(bestDurs[bm.name] ?? 1e12, bm.duration);
+       }
+       if (bm.memory > 0) {
+         bestMems[bm.name] = Math.min(bestMems[bm.name] ?? 1e12, bm.memory);
+       }
+     }
     bestGzipBund = Math.min(bestGzipBund, result.gzipBundle);
     bestRawBund = Math.min(bestRawBund, result.rawBundle);
     bestBrotliBund = Math.min(bestBrotliBund, result.brotliBundle);
@@ -97,12 +117,18 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
   for (const result of results) {
     let totalDurNorm = 1;
     let totalMemNorm = 1;
+    let totalCpuNorm = 1;
+    let durCount = 0;
+    let memCount = 0;
+    let cpuCount = 0;
     const durRelMOEs: number[] = [];
     const memRelMOEs: number[] = [];
+    const cpuRelMOEs: number[] = [];
     for (const bm of result.benchmarks) {
       if (bm.duration && bestDurs[bm.name]) {
         bm.normalDuration = bm.duration / bestDurs[bm.name];
         totalDurNorm *= bm.normalDuration;
+        durCount++;
 
         if (bm.durationMOE !== undefined && bm.duration > 0 && bm.durationMOE > 0) {
           durRelMOEs.push(bm.durationMOE / bm.duration);
@@ -111,34 +137,56 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
       if (bm.memory && bestMems[bm.name]) {
         bm.normalMemory = bm.memory / bestMems[bm.name];
         totalMemNorm *= bm.normalMemory;
+        memCount++;
 
         if (bm.memoryMOE !== undefined && bm.memory > 0 && bm.memoryMOE > 0) {
           memRelMOEs.push(bm.memoryMOE / bm.memory);
         }
       }
+      if (bm.cpu !== undefined && bestCpus[bm.name]) {
+        bm.normalCpu = bm.cpu / bestCpus[bm.name];
+        totalCpuNorm *= bm.normalCpu;
+        cpuCount++;
+
+        if (bm.cpuMOE !== undefined && bm.cpu > 0 && bm.cpuMOE > 0) {
+            cpuRelMOEs.push(bm.cpuMOE / bm.cpu);
+        }
+      }
     }
 
-    const compositeNormalDuration = Math.pow(totalDurNorm, 1 / result.benchmarks.length);
-    const compositeNormalMemory = Math.pow(totalMemNorm, 1 / result.benchmarks.length);
+    const compositeNormalDuration = durCount > 0 ? Math.pow(totalDurNorm, 1 / durCount) : 0;
+    const compositeNormalMemory = memCount > 0 ? Math.pow(totalMemNorm, 1 / memCount) : 0;
+    const compositeNormalCpu = cpuCount > 0 ? Math.pow(totalCpuNorm, 1 / cpuCount) : 0;
 
     // Relative MOE of the Geometric Mean = (1/n) * sqrt(sum(relativeMOE^2))
     const durRelMOESumSq = durRelMOEs.reduce((sum, r) => sum + r * r, 0);
-    const compositeDurationMOE = compositeNormalDuration * (Math.sqrt(durRelMOESumSq) / result.benchmarks.length);
+    const compositeDurationMOE = durCount > 0
+      ? compositeNormalDuration * (Math.sqrt(durRelMOESumSq) / durCount)
+      : 0;
 
     const memRelMOESumSq = memRelMOEs.reduce((sum, r) => sum + r * r, 0);
-    const compositeMemoryMOE = compositeNormalMemory * (Math.sqrt(memRelMOESumSq) / result.benchmarks.length);
+    const compositeMemoryMOE = memCount > 0
+      ? compositeNormalMemory * (Math.sqrt(memRelMOESumSq) / memCount)
+      : 0;
+    
+    const cpuRelMOESumSq = cpuRelMOEs.reduce((sum, r) => sum + r * r, 0);
+    const compositeCpuMOE = cpuCount > 0 ? compositeNormalCpu * (Math.sqrt(cpuRelMOESumSq) / cpuCount) : 0;
 
     result.benchmarks.unshift({
       name: COMPOSITE_NAME,
       measurements: [],
       normalDuration: compositeNormalDuration,
       normalMemory: compositeNormalMemory,
+      normalCpu: compositeNormalCpu,
       normalDurationMOE: compositeDurationMOE,
       normalMemoryMOE: compositeMemoryMOE,
+      normalCpuMOE: compositeCpuMOE,
       duration: 0,
       memory: 0,
+      cpu: 0,
       durationMOE: 0,
-      memoryMOE: 0
+      memoryMOE: 0,
+      cpuMOE: 0
     });
     result.normalGzipBundle = result.gzipBundle / bestGzipBund;
     result.normalRawBundle = result.rawBundle / bestRawBund;

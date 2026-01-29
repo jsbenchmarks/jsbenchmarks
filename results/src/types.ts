@@ -1,6 +1,7 @@
 export interface Measurement {
   duration: number;
   memory: number;
+  cpu?: number;
   traceFile: string;
 }
 
@@ -13,10 +14,15 @@ export interface Benchmark {
   memory?: number;
   memoryStdDev?: number;
   memoryMOE?: number;
+  cpu?: number;
+  cpuStdDev?: number;
+  cpuMOE?: number;
   normalDuration?: number;
   normalMemory?: number;
+  normalCpu?: number;
   normalDurationMOE?: number;
   normalMemoryMOE?: number;
+  normalCpuMOE?: number;
 }
 
 export interface RawResult {

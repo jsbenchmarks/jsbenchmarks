@@ -13,7 +13,7 @@ export component Row({ row, selected, weightConversion, lengthConversion, powerC
       {(height * lengthConversion).toFixed(1) + ' x ' + (width * lengthConversion).toFixed(1) + ' x ' + (depth * lengthConversion).toFixed(1) + ' ' + unitmap.length[unitSystem]}
     </td>
     <td>{(row.powerConsumption * powerConversion).toFixed(1) + ' ' + unitmap.power[unitSystem]}</td>
-    <td>{'$' + row.price.toFixed(2)}</td>
+    <td>{'$' + row.@price.toFixed(2)}</td>
     <td>{row.@availabilityStatus}</td>
     <td>{row.rating.toFixed(1)}</td>
     <td>

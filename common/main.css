@@ -96,6 +96,38 @@ table {
       }
     }
 
+    &:nth-child(1) {
+      width: 5%;
+    }
+
+    &:nth-child(2) {
+      width: 20%;
+    }
+
+    &:nth-child(3) {
+      width: 10%;
+    }
+
+    &:nth-child(4) {
+      width: 14%;
+    }
+
+    &:nth-child(5) {
+      width: 14%;
+    }
+
+    &:nth-child(6) {
+      width: 10%;
+    }
+
+    &:nth-child(7) {
+      width: 15%;
+    }
+
+    &:nth-child(8) {
+      width: 10%;
+    }
+
     &:last-child {
       text-align: right;
       width: 1%;
