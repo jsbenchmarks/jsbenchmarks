@@ -7,6 +7,15 @@
     margin-bottom: 30px;
 }
 
+.FrameworkDetails-h2 {
+  font-size: 1.5em;
+  margin-bottom: 1em;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.3em;
+}
+
 .FrameworkDetails-back {
     display: inline-block;
     margin-bottom: 20px;

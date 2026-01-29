@@ -1,6 +1,5 @@
 import * as fs from "fs";
 import * as path from "path";
-import { benchmarks as allBenchmarks } from "./tests.js";
 
 function analyzeTrace(trace) {
   const events = trace.traceEvents;
@@ -75,8 +74,6 @@ function analyzeTrace(trace) {
         try {
           const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
           meta.duration = analyzeTrace(traceData);
-          // Save back to meta file to cache it
-          await fs.promises.writeFile(metaPath, JSON.stringify(meta, null, 2));
         } catch (e) {
           console.error(`Error analyzing trace ${tracePath}:`, e);
           meta.duration = 0;
@@ -106,39 +103,8 @@ function analyzeTrace(trace) {
     }
   }
 
-  // 3. Sort and Format
   const results = Array.from(frameworksMap.values());
-  const benchmarkOrder = new Map(allBenchmarks.map((b, i) => [b.name, i]));
-
-  function sortBenchmarksCanonical(a, b) {
-    const aIdx = benchmarkOrder.has(a.name) ? benchmarkOrder.get(a.name) : Number.POSITIVE_INFINITY;
-    const bIdx = benchmarkOrder.has(b.name) ? benchmarkOrder.get(b.name) : Number.POSITIVE_INFINITY;
-    if (aIdx !== bIdx) return aIdx - bIdx;
-    return a.name.localeCompare(b.name);
-  }
-
-  for (const result of results) {
-    // Sort benchmarks
-    result.benchmarks.sort(sortBenchmarksCanonical);
-
-    // Sort measurements by run index (inferred from traceFile name usually ending in -N.json)
-    // or just leave them as is. Usually order doesn't matter for stats, but nice for stability.
-    for (const b of result.benchmarks) {
-      b.measurements.sort((m1, m2) => {
-        const getRun = (s) => {
-          if (!s) return 0;
-          return parseInt(s.match(/-(\d+)\.json$/)?.[1] || "0");
-        };
-        return getRun(m1.traceFile) - getRun(m2.traceFile);
-      });
-    }
-  }
-
-  // Sort frameworks by name
-  results.sort((a, b) => a.framework.localeCompare(b.framework));
-
   const fileContent = `export const results = ${JSON.stringify(results)};`;
   fs.writeFileSync(outputPath, fileContent);
-
   console.log(`Successfully processed results and wrote to ${outputPath}`);
 })();
