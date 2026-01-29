@@ -25,7 +25,7 @@ const allBenchmarkNames = (() => {
 export function Home() {
   const [durationSort, setDurationSort] = useState<SortConfig<string>>({ key: COMPOSITE_NAME, dir: 'asc' });
   const [memorySort, setMemorySort] = useState<SortConfig<string>>({ key: COMPOSITE_NAME, dir: 'asc' });
-  const [loadSort, setLoadSort] = useState<SortConfig<LoadSortKey>>({ key: 'stream|cpu', dir: 'asc' });
+  const [loadSort, setLoadSort] = useState<SortConfig<LoadSortKey>>({ key: COMPOSITE_NAME, dir: 'asc' });
 
   const [bundleSort, setBundleSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeBundle', dir: 'asc' });
   const [statsSort, setStatsSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeStats', dir: 'asc' });

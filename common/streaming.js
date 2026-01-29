@@ -7,9 +7,7 @@ export function streamUpdates(callback) {
     for (let i = 0; i < 10; i++) {
         const id = Math.floor(Math.random() * 25) + currentId - 25;
         const update = { id };
-        
         const type = Math.random();
-        // 33% price only, 33% status only, 33% both
         if (type < 0.33) {
             update.price = Math.random() * 1000 + 50;
         } else if (type < 0.66) {
