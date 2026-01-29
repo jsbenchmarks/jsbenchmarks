@@ -1,7 +1,7 @@
 node_modules
 dist
 trace.json
-results/traces/
+results/public/traces/
+results/public/demos/
 results/frameworks/
-results/raw-data.json
 

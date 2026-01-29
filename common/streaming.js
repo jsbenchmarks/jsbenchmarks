@@ -1,4 +1,4 @@
-import { currentId } from './data';
+import { currentId, randomAvailability } from './data';
 
 export function streamUpdates(callback) {
   let intervalId;
@@ -11,10 +11,10 @@ export function streamUpdates(callback) {
         if (type < 0.33) {
             update.price = Math.random() * 1000 + 50;
         } else if (type < 0.66) {
-            update.availabilityStatus = Math.random() > 0.5 ? "In Stock" : "Out of Stock";
+            update.availabilityStatus = randomAvailability();
         } else {
             update.price = Math.random() * 1000 + 50;
-            update.availabilityStatus = Math.random() > 0.5 ? "In Stock" : "Out of Stock";
+            update.availabilityStatus = randomAvailability();
         }
         
         updates.push(update);

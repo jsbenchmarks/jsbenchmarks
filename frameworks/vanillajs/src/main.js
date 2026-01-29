@@ -1,4 +1,5 @@
 import { buildData, unitmap } from "common/data";
+import "common/main.css";
 import { streamUpdates } from "common/streaming";
 
 let selectedTr = null;

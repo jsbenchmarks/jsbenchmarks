@@ -9,6 +9,12 @@ const productNouns = [
 let rand = arr => arr[Math.floor(Math.random() * arr.length)];
 export let currentId = 0;
 
+const availabilityStatuses = ["In Stock", "Low Stock", "Out of Stock"];
+
+export function randomAvailability() {
+  return rand(availabilityStatuses);
+}
+
 /**
  * Builds an array of mock product specification items.
  * @param {number} count The number of items to generate.
@@ -31,7 +37,7 @@ export function buildData(count) {
       },
       powerConsumption: Math.random() * 1000 + 5,
       price: Math.random() * 1000 + 50,
-      availabilityStatus: rand(["In Stock", "Low Stock", "Out of Stock"]),
+      availabilityStatus: randomAvailability(),
       rating: Math.random() * 2 + 3,
     };
   }

@@ -1,3 +1,4 @@
+import "common/main.css";
 import { mount } from 'ripple';
 import { App } from './App.ripple';
 

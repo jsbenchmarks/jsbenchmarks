@@ -1,4 +1,6 @@
-import { render } from 'preact'
-import { App } from './app.jsx'
+import 'common/main.css';
+import { render } from 'preact';
+import { App } from './app.jsx';
+
 
 render(<App />, document.body)
