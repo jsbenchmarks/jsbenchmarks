@@ -22,7 +22,7 @@
 }
 
 .MemoryTable-th, .MemoryTable-td {
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-bottom: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
 }
@@ -57,12 +57,28 @@
   z-index: 1;
   background-color: var(--bg-color);
   border-right: 1px solid var(--border-color);
-  width: 1%;
+  min-width: 120px;
+  max-width: 120px;
 }
 
 .MemoryTable-table thead .MemoryTable-sticky-col {
   background-color: var(--table-header-bg);
   z-index: 11;
+}
+
+.MemoryTable-mean-col {
+  position: sticky;
+  left: 120px;
+  z-index: 2;
+  min-width: 100px;
+  max-width: 100px;
+  background-color: var(--bg-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.MemoryTable-table thead .MemoryTable-mean-col {
+  background-color: var(--table-header-bg);
+  z-index: 12;
 }
 
 .MemoryTable-td {
@@ -85,6 +101,10 @@
 }
 
 .MemoryTable-tr:hover .MemoryTable-td.MemoryTable-sticky-col {
+  background-color: #161b22;
+}
+
+.MemoryTable-tr:hover .MemoryTable-td.MemoryTable-mean-col {
   background-color: #161b22;
 }
 

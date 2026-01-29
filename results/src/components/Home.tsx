@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { results as rawResults } from '../data';
 import type { RawResult, Result, SortConfig } from '../types';
 import { calculateResults, COMPOSITE_NAME } from '../utils';
-import { BenchmarkFilter } from './BenchmarkFilter';
 import { BundleTable } from './BundleTable';
 import { DurationTable } from './DurationTable';
 import { LoadTable, type LoadSortKey } from './LoadTable';
@@ -26,14 +25,16 @@ const allBenchmarkNames = (() => {
 export function Home() {
   const [durationSort, setDurationSort] = useState<SortConfig<string>>({ key: COMPOSITE_NAME, dir: 'asc' });
   const [memorySort, setMemorySort] = useState<SortConfig<string>>({ key: COMPOSITE_NAME, dir: 'asc' });
-  const [loadSort, setLoadSort] = useState<SortConfig<LoadSortKey>>({ key: COMPOSITE_NAME, dir: 'asc' });
+  const [loadSort, setLoadSort] = useState<SortConfig<LoadSortKey>>({ key: 'stream|cpu', dir: 'asc' });
 
   const [bundleSort, setBundleSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeBundle', dir: 'asc' });
   const [statsSort, setStatsSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeStats', dir: 'asc' });
 
-  const [selectedBenchmarks, setSelectedBenchmarks] = useState<Set<string>>(new Set(allBenchmarkNames));
+  const [selectedDurationBenchmarks, setSelectedDurationBenchmarks] = useState<Set<string>>(new Set(allBenchmarkNames));
+  const [selectedMemoryBenchmarks, setSelectedMemoryBenchmarks] = useState<Set<string>>(new Set(allBenchmarkNames));
 
-  const baseRows = useMemo(() => calculateResults(inputData, selectedBenchmarks), [selectedBenchmarks]);
+  // Base results without any filtering, used for categorization and non-filtered tables
+  const baseRows = useMemo(() => calculateResults(inputData), []);
 
   const handleDurationSort = (name: string) => {
     setDurationSort(prev => ({
@@ -70,8 +71,8 @@ export function Home() {
     }));
   };
 
-  const handleBenchmarkToggle = (name: string) => {
-    setSelectedBenchmarks(prev => {
+  const handleDurationBenchmarkToggle = (name: string) => {
+    setSelectedDurationBenchmarks(prev => {
       const next = new Set(prev);
       if (next.has(name)) {
         next.delete(name);
@@ -82,36 +83,45 @@ export function Home() {
     });
   };
 
-  const handleSelectAll = () => setSelectedBenchmarks(new Set(allBenchmarkNames));
-  const handleSelectNone = () => setSelectedBenchmarks(new Set());
+  const handleMemoryBenchmarkToggle = (name: string) => {
+    setSelectedMemoryBenchmarks(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  };
 
   const durationRows = useMemo(() => {
-    const copy = [...baseRows];
+    const rows = calculateResults(inputData, selectedDurationBenchmarks);
+    const copy = [...rows];
     copy.sort((a, b) => {
       const aVal = a.benchmarks.find(t => t.name === durationSort.key)?.normalDuration ?? 0;
       const bVal = b.benchmarks.find(t => t.name === durationSort.key)?.normalDuration ?? 0;
       return durationSort.dir === 'asc' ? (aVal < bVal ? -1 : 1) : (aVal > bVal ? -1 : 1);
     });
     return copy;
-  }, [baseRows, durationSort]);
+  }, [selectedDurationBenchmarks, durationSort]);
 
   const memoryRows = useMemo(() => {
-    const copy = [...baseRows];
+    const rows = calculateResults(inputData, selectedMemoryBenchmarks);
+    const copy = [...rows];
     copy.sort((a, b) => {
       const aVal = a.benchmarks.find(t => t.name === memorySort.key)?.normalMemory ?? 0;
       const bVal = b.benchmarks.find(t => t.name === memorySort.key)?.normalMemory ?? 0;
       return memorySort.dir === 'asc' ? (aVal < bVal ? -1 : 1) : (aVal > bVal ? -1 : 1);
     });
     return copy;
-  }, [baseRows, memorySort]);
+  }, [selectedMemoryBenchmarks, memorySort]);
 
   const { loadBenchmarks, standardBenchmarks } = useMemo(() => {
     const load: string[] = [];
     const standard: string[] = [];
     
     for (const name of allBenchmarkNames) {
-      if (!selectedBenchmarks.has(name)) continue;
-      
       // Identify load tests by checking if any result has CPU data for this benchmark
       const isLoad = baseRows.some(r => r.benchmarks.find(b => b.name === name)?.cpu !== undefined);
       
@@ -122,7 +132,7 @@ export function Home() {
       }
     }
     return { loadBenchmarks: load, standardBenchmarks: standard };
-  }, [baseRows, selectedBenchmarks]);
+  }, [baseRows]);
 
   const loadRows = useMemo(() => {
     const copy = [...baseRows];
@@ -155,7 +165,7 @@ export function Home() {
           const bVal = calculateLoadMean(b);
           return loadSort.dir === 'asc' ? (aVal < bVal ? -1 : 1) : (aVal > bVal ? -1 : 1);
       }
-      
+
       const [name, metric] = loadSort.key.split('|') as [string, 'cpu' | 'memory'];
       const aBm = a.benchmarks.find(t => t.name === name);
       const bBm = b.benchmarks.find(t => t.name === name);
@@ -168,7 +178,7 @@ export function Home() {
       return loadSort.dir === 'asc' ? (aVal < bVal ? -1 : 1) : (aVal > bVal ? -1 : 1);
     });
     return copy;
-  }, [baseRows, loadSort]);
+  }, [baseRows, loadSort, loadBenchmarks]);
 
   const bundleRows = useMemo(() => {
     const copy = [...baseRows];
@@ -203,32 +213,19 @@ export function Home() {
             <strong>System:</strong> Linux / Chrome 144
           </p>
           <p className="App-p">
-            <strong>Candidates:</strong> Very popular or very fast frameworks.
-            Purely data-driven (no direct DOM manipulation or anything that would warrant a flag).
-          </p>
-          <p className="App-p">
-            <strong>Purpose:</strong> To provide a more thorough benchmark.
-          </p>
-          <p className="App-p">
             <strong>Repository:</strong> <a className="App-link" href="https://github.com/jsbenchmarks/jsbenchmarks">https://github.com/jsbenchmarks/jsbenchmarks</a>
           </p>
         </div>
       </header>
       
-      <BenchmarkFilter
-        benchmarks={allBenchmarkNames}
-        selected={selectedBenchmarks}
-        onChange={handleBenchmarkToggle}
-        onSelectAll={handleSelectAll}
-        onSelectNone={handleSelectNone}
-      />
-
       <h2 className="App-h2">Duration in ms ± 95% confidence interval</h2>
       <DurationTable
         rows={durationRows}
         benchmarkNames={durationTableNames}
         sortConfig={durationSort}
         onSort={handleDurationSort}
+        selectedBenchmarks={selectedDurationBenchmarks}
+        onBenchmarkToggle={handleDurationBenchmarkToggle}
       />
       <h2 className="App-h2">Memory in MB ± 95% confidence interval</h2>
       <MemoryTable
@@ -236,6 +233,8 @@ export function Home() {
         benchmarkNames={memoryTableNames}
         sortConfig={memorySort}
         onSort={handleMemorySort}
+        selectedBenchmarks={selectedMemoryBenchmarks}
+        onBenchmarkToggle={handleMemoryBenchmarkToggle}
       />
       {loadBenchmarks.length > 0 && (
         <>

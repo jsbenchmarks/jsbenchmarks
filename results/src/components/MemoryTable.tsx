@@ -9,9 +9,11 @@ interface MemoryTableProps {
   benchmarkNames: string[];
   sortConfig: SortConfig<string>;
   onSort: (name: string) => void;
+  selectedBenchmarks: Set<string>;
+  onBenchmarkToggle: (name: string) => void;
 }
 
-export const MemoryTable = ({ rows, benchmarkNames, sortConfig, onSort }: MemoryTableProps) => {
+export const MemoryTable = ({ rows, benchmarkNames, sortConfig, onSort, selectedBenchmarks, onBenchmarkToggle }: MemoryTableProps) => {
   return (
     <div className="MemoryTable-container">
       <table className="MemoryTable-table">
@@ -21,11 +23,23 @@ export const MemoryTable = ({ rows, benchmarkNames, sortConfig, onSort }: Memory
             {benchmarkNames.map(name => (
               <th
                 key={name}
-                className="MemoryTable-th MemoryTable-sortable"
+                className={`MemoryTable-th MemoryTable-sortable ${name === COMPOSITE_NAME ? 'MemoryTable-mean-col' : ''}`}
                 onClick={() => onSort(name)}
               >
                 <div className="MemoryTable-header-content">
-                  {name}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {name !== COMPOSITE_NAME && (
+                      <input
+                        type="checkbox"
+                        checked={selectedBenchmarks.has(name)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => onBenchmarkToggle(name)}
+                        className="MemoryTable-checkbox"
+                        style={{ cursor: 'pointer' }}
+                      />
+                    )}
+                    {name}
+                  </span>
                   <SortIndicator active={sortConfig.key === name} dir={sortConfig.dir} />
                 </div>
               </th>
@@ -49,12 +63,13 @@ export const MemoryTable = ({ rows, benchmarkNames, sortConfig, onSort }: Memory
                 </td>
                 {benchmarkNames.map(name => {
                   const bm = byName.get(name);
+                  const isSelected = name === COMPOSITE_NAME || selectedBenchmarks.has(name);
                   const norm = bm?.normalMemory;
                   return (
                     <td
                       key={name}
-                      className="MemoryTable-td"
-                      style={norm ? { color: color(norm) } : {}}
+                      className={`MemoryTable-td ${name === COMPOSITE_NAME ? 'MemoryTable-mean-col' : ''}`}
+                      style={isSelected && norm ? { color: color(norm) } : { color: '#888' }}
                     >
                       {bm?.memory ? ` ${(bm.memory / 1e6).toFixed(1)} ± ${(bm.memoryMOE! / 1e6).toFixed(2)} ` : ""}
                       {bm?.name === COMPOSITE_NAME

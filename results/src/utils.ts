@@ -35,7 +35,6 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
     ...result,
     version: result.framework === 'vanillajs' ? undefined : result.version,
     benchmarks: result.benchmarks
-      .filter(bm => !selectedBenchmarks || selectedBenchmarks.has(bm.name))
       .map(bm => ({
         ...bm,
         measurements: bm.measurements.map(m => ({ ...m })),
@@ -125,31 +124,42 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
     const memRelMOEs: number[] = [];
     const cpuRelMOEs: number[] = [];
     for (const bm of result.benchmarks) {
+      const isSelected = !selectedBenchmarks || selectedBenchmarks.has(bm.name);
+
       if (bm.duration && bestDurs[bm.name]) {
         bm.normalDuration = bm.duration / bestDurs[bm.name];
-        totalDurNorm *= bm.normalDuration;
-        durCount++;
+        
+        if (isSelected) {
+          totalDurNorm *= bm.normalDuration;
+          durCount++;
 
-        if (bm.durationMOE !== undefined && bm.duration > 0 && bm.durationMOE > 0) {
-          durRelMOEs.push(bm.durationMOE / bm.duration);
+          if (bm.durationMOE !== undefined && bm.duration > 0 && bm.durationMOE > 0) {
+            durRelMOEs.push(bm.durationMOE / bm.duration);
+          }
         }
       }
       if (bm.memory && bestMems[bm.name]) {
         bm.normalMemory = bm.memory / bestMems[bm.name];
-        totalMemNorm *= bm.normalMemory;
-        memCount++;
+        
+        if (isSelected) {
+          totalMemNorm *= bm.normalMemory;
+          memCount++;
 
-        if (bm.memoryMOE !== undefined && bm.memory > 0 && bm.memoryMOE > 0) {
-          memRelMOEs.push(bm.memoryMOE / bm.memory);
+          if (bm.memoryMOE !== undefined && bm.memory > 0 && bm.memoryMOE > 0) {
+            memRelMOEs.push(bm.memoryMOE / bm.memory);
+          }
         }
       }
       if (bm.cpu !== undefined && bestCpus[bm.name]) {
         bm.normalCpu = bm.cpu / bestCpus[bm.name];
-        totalCpuNorm *= bm.normalCpu;
-        cpuCount++;
+        
+        if (isSelected) {
+          totalCpuNorm *= bm.normalCpu;
+          cpuCount++;
 
-        if (bm.cpuMOE !== undefined && bm.cpu > 0 && bm.cpuMOE > 0) {
-            cpuRelMOEs.push(bm.cpuMOE / bm.cpu);
+          if (bm.cpuMOE !== undefined && bm.cpu > 0 && bm.cpuMOE > 0) {
+              cpuRelMOEs.push(bm.cpuMOE / bm.cpu);
+          }
         }
       }
     }

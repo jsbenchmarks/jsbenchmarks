@@ -9,9 +9,11 @@ interface DurationTableProps {
   benchmarkNames: string[];
   sortConfig: SortConfig<string>;
   onSort: (name: string) => void;
+  selectedBenchmarks: Set<string>;
+  onBenchmarkToggle: (name: string) => void;
 }
 
-export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort }: DurationTableProps) => {
+export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort, selectedBenchmarks, onBenchmarkToggle }: DurationTableProps) => {
   return (
     <div className="DurationTable-container">
       <table className="DurationTable-table">
@@ -21,11 +23,23 @@ export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort }: Dura
             {benchmarkNames.map(name => (
               <th
                 key={name}
-                className="DurationTable-th DurationTable-sortable"
+                className={`DurationTable-th DurationTable-sortable ${name === COMPOSITE_NAME ? 'DurationTable-mean-col' : ''}`}
                 onClick={() => onSort(name)}
               >
                 <div className="DurationTable-header-content">
-                  {name}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {name !== COMPOSITE_NAME && (
+                      <input
+                        type="checkbox"
+                        checked={selectedBenchmarks.has(name)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => onBenchmarkToggle(name)}
+                        className="DurationTable-checkbox"
+                        style={{ cursor: 'pointer' }}
+                      />
+                    )}
+                    {name}
+                  </span>
                   <SortIndicator active={sortConfig.key === name} dir={sortConfig.dir} />
                 </div>
               </th>
@@ -49,12 +63,13 @@ export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort }: Dura
                 </td>
                 {benchmarkNames.map(name => {
                   const bm = byName.get(name);
+                  const isSelected = name === COMPOSITE_NAME || selectedBenchmarks.has(name);
                   const norm = bm?.normalDuration;
                   return (
                     <td
                       key={name}
-                      className="DurationTable-td"
-                      style={norm ? { color: color(norm) } : {}}
+                      className={`DurationTable-td ${name === COMPOSITE_NAME ? 'DurationTable-mean-col' : ''}`}
+                      style={isSelected && norm ? { color: color(norm) } : { color: '#888' }}
                     >
                       {bm?.duration ? `${bm.duration.toFixed(1)} ± ${bm.durationMOE?.toFixed(1)} ` : ""}
                       {bm?.name === COMPOSITE_NAME
