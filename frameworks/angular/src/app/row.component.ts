@@ -29,6 +29,7 @@ import { unitmap } from 'common/data';
       <td>
         <button
           class="small"
+          [disabled]="isStreaming"
           (click)="onDelete($event)"
         >
           delete
@@ -44,6 +45,7 @@ import { unitmap } from 'common/data';
 export class RowComponent {
   @Input() row: any;
   @Input() selected: number | null = null;
+  @Input() isStreaming: boolean = false;
   @Input() unitSystem: 'metric' | 'imperial' = 'metric';
   @Input() weightConversion: number = 1;
   @Input() lengthConversion: number = 1;
@@ -55,11 +57,13 @@ export class RowComponent {
   unitmap = unitmap;
 
   onSelect() {
+    if (this.isStreaming) return;
     this.select.emit(this.row.id);
   }
 
   onDelete(e: Event) {
     e.stopPropagation();
+    if (this.isStreaming) return;
     this.remove.emit(this.row.id);
   }
 }

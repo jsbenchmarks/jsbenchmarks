@@ -3,20 +3,20 @@
     <div class="header">
       <h1>Vue</h1>
       <div class="actions">
-        <button id="create" @click="create">Create</button>
+        <button id="create" :disabled="isStreaming" @click="create">Create</button>
         <button id="stream" @click="stream">{{ isStreaming ? 'Stop' : 'Stream' }}</button>
-        <button id="reverse" @click="() => rows = rows.toReversed()">Reverse</button>
-        <button id="insert"
+        <button id="reverse" :disabled="isStreaming" @click="() => rows = rows.toReversed()">Reverse</button>
+        <button id="insert" :disabled="isStreaming"
           @click="() => rows = [...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)]">Insert</button>
-        <button id="prepend" @click="() => rows = [...buildData(1), ...rows]">Prepend</button>
-        <button id="append" @click="() => rows = [...rows, ...buildData(1)]">Append</button>
-        <button id="sort" @click="() => rows = rows.toSorted((a, b) => a.name.localeCompare(b.name))">Sort</button>
-        <button id="filter" @click="() => rows = rows.filter(d => d.id % 2)">Filter</button>
-        <button id="units" @click="() => unitSystem = unitSystem === 'imperial' ? 'metric' : 'imperial'">Units</button>
-        <button id="restock" @click="() => rows = rows.map(r => r.availabilityStatus === 'Out of Stock'
+        <button id="prepend" :disabled="isStreaming" @click="() => rows = [...buildData(1), ...rows]">Prepend</button>
+        <button id="append" :disabled="isStreaming" @click="() => rows = [...rows, ...buildData(1)]">Append</button>
+        <button id="sort" :disabled="isStreaming" @click="() => rows = rows.toSorted((a, b) => a.name.localeCompare(b.name))">Sort</button>
+        <button id="filter" :disabled="isStreaming" @click="() => rows = rows.filter(d => d.id % 2)">Filter</button>
+        <button id="units" :disabled="isStreaming" @click="() => unitSystem = unitSystem === 'imperial' ? 'metric' : 'imperial'">Units</button>
+        <button id="restock" :disabled="isStreaming" @click="() => rows = rows.map(r => r.availabilityStatus === 'Out of Stock'
           ? { ...r, availabilityStatus: 'In Stock' }
           : r)">Restock</button>
-        <button id="clear" @click="clear">Clear</button>
+        <button id="clear" :disabled="isStreaming" @click="clear">Clear</button>
       </div>
     </div>
 
@@ -35,9 +35,9 @@
         </tr>
       </thead>
       <tbody>
-        <Row v-for="row in rows" :key="row.id" :row="row" :selected="selected" :unitSystem="unitSystem"
+        <Row v-for="row in rows" :key="row.id" :row="row" :selected="selected" :isStreaming="isStreaming" :unitSystem="unitSystem"
           :weightConversion="weightConversion" :lengthConversion="lengthConversion" :powerConversion="powerConversion"
-          @select="selected = $event" @delete="rows = rows.filter(r => r.id !== row.id)" />
+          @select="!isStreaming && (selected = $event)" @delete="rows = rows.filter(r => r.id !== row.id)" />
       </tbody>
     </table>
 
@@ -83,14 +83,17 @@ function stream() {
     isStreaming.value = false;
     return;
   }
+  const initialRows = buildData(25);
   isStreaming.value = true;
-  rows.value = buildData(25);
+  rows.value = initialRows;
+
+  const idMap = new Map();
+  for (let i = 0; i < initialRows.length; i++) {
+    idMap.set(initialRows[i].id, i);
+  }
+
   stopStreaming = streamUpdates((updates) => {
     const newRows = [...rows.value];
-    const idMap = new Map();
-    for (let i = 0; i < newRows.length; i++) {
-      idMap.set(newRows[i].id, i);
-    }
     for (const update of updates) {
       const idx = idMap.get(update.id);
       if (idx !== undefined) {

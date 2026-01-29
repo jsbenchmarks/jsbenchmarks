@@ -7,12 +7,12 @@
     selected,
     unitSystem
   } from "./state.svelte";
-  const { row, remove } = $props();
+  const { row, remove, isStreaming } = $props();
 </script>
 
 <tr
   class:selected={selected.value === row.id}
-  onclick={() => (selected.value = row.id)}
+  onclick={() => !isStreaming && (selected.value = row.id)}
 >
   <td>{row.id}</td>
   <td>{row.name}</td>
@@ -36,6 +36,7 @@
   <td>
     <button
       class="small"
+      disabled={isStreaming}
       onclick={(e) => {
         e.stopPropagation();
         remove(row);

@@ -40,14 +40,16 @@ function App() {
       setIsStreaming(false);
       return;
     }
+    const initialRows = buildData(25);
     setIsStreaming(true);
-    setRows(buildData(25));
+    setRows(initialRows);
+
+    const idMap = new Map();
+    for (const row of initialRows) {
+      idMap.set(row.id, row);
+    }
+
     stopStreaming = streamUpdates((updates) => {
-        const currentRows = rows();
-        const idMap = new Map();
-        for (const row of currentRows) {
-            idMap.set(row.id, row);
-        }
         for (const update of updates) {
             const row = idMap.get(update.id);
             if (row) {
@@ -72,21 +74,21 @@ function App() {
       <div class="header">
         <h1>Solid</h1>
         <div class="actions">
-          <button id="create" onClick={create}>Create</button>
+          <button id="create" disabled={isStreaming()} onClick={create}>Create</button>
           <button id="stream" onClick={stream}>{isStreaming() ? 'Stop' : 'Stream'}</button>
-          <button id="reverse" onClick={() => setRows([...rows()].toReversed())}>Reverse</button>
-          <button id="insert" onClick={() => setRows([
+          <button id="reverse" disabled={isStreaming()} onClick={() => setRows([...rows()].toReversed())}>Reverse</button>
+          <button id="insert" disabled={isStreaming()} onClick={() => setRows([
             ...rows().slice(0, 10),
             ...buildData(1),
             ...rows().slice(10),
           ])}>Insert</button>
-          <button id="prepend" onClick={() => setRows([...buildData(1), ...rows()])}>Prepend</button>
-          <button id="append" onClick={() => setRows([...rows(), ...buildData(1)])}>Append</button>
-          <button id="sort" onClick={() => setRows([...rows()].toSorted((a, b) => a.name.localeCompare(b.name)))}>Sort</button>
-          <button id="filter" onClick={() => setRows(rows().filter((d) => d.id % 2))}>Filter</button>
-          <button id="units" onClick={() => setUnitSystem(unitSystem() === 'imperial' ? 'metric' : 'imperial')}>Units</button>
-          <button id="restock" onClick={() => rows().forEach(r => r.availabilityStatus[0]() === "Out of Stock" ? r.availabilityStatus[1]("In Stock") : null)}>Restock</button>
-          <button id="clear" onClick={clear}>Clear</button>
+          <button id="prepend" disabled={isStreaming()} onClick={() => setRows([...buildData(1), ...rows()])}>Prepend</button>
+          <button id="append" disabled={isStreaming()} onClick={() => setRows([...rows(), ...buildData(1)])}>Append</button>
+          <button id="sort" disabled={isStreaming()} onClick={() => setRows([...rows()].toSorted((a, b) => a.name.localeCompare(b.name)))}>Sort</button>
+          <button id="filter" disabled={isStreaming()} onClick={() => setRows(rows().filter((d) => d.id % 2))}>Filter</button>
+          <button id="units" disabled={isStreaming()} onClick={() => setUnitSystem(unitSystem() === 'imperial' ? 'metric' : 'imperial')}>Units</button>
+          <button id="restock" disabled={isStreaming()} onClick={() => rows().forEach(r => r.availabilityStatus[0]() === "Out of Stock" ? r.availabilityStatus[1]("In Stock") : null)}>Restock</button>
+          <button id="clear" disabled={isStreaming()} onClick={clear}>Clear</button>
         </div>
       </div>
 
@@ -110,6 +112,7 @@ function App() {
               {(row) => (
                 <Row
                   row={row}
+                  isStreaming={isStreaming()}
                 />
               )}
             </For>

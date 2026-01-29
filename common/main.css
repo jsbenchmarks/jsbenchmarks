@@ -62,6 +62,11 @@ button {
   &:focus {
     background: #111;
   }
+
+  &[disabled] {
+    background: #999;
+    cursor: not-allowed;
+  }
 }
 
 .actions {

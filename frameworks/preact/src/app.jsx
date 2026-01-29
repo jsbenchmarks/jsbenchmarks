@@ -38,14 +38,17 @@ export function App() {
       isStreaming.value = false;
       return;
     }
+    const initialRows = buildData(25);
     isStreaming.value = true;
-    rows.value = buildData(25);
+    rows.value = initialRows;
+
+    const idMap = new Map();
+    for (let i = 0; i < initialRows.length; i++) {
+      idMap.set(initialRows[i].id, i);
+    }
+
     stopStreaming = streamUpdates((updates) => {
       const newRows = [...rows.value];
-      const idMap = new Map();
-      for (let i = 0; i < newRows.length; i++) {
-        idMap.set(newRows[i].id, i);
-      }
       for (const update of updates) {
         const idx = idMap.get(update.id);
         if (idx !== undefined) {
@@ -75,11 +78,12 @@ export function App() {
       <div class="header">
         <h1>Preact</h1>
         <div class="actions">
-          <button id="create" onClick={create}>Create</button>
+          <button id="create" disabled={isStreaming.value} onClick={create}>Create</button>
           <button id="stream" onClick={stream}>{isStreaming.value ? 'Stop' : 'Stream'}</button>
-          <button id="reverse" onClick={() => (rows.value = [...rows.value].toReversed())}>Reverse</button>
+          <button id="reverse" disabled={isStreaming.value} onClick={() => (rows.value = [...rows.value].toReversed())}>Reverse</button>
           <button
             id="insert"
+            disabled={isStreaming.value}
             onClick={() =>
               (rows.value = [
                 ...rows.value.slice(0, 10),
@@ -90,10 +94,11 @@ export function App() {
           >
             Insert
           </button>
-          <button id="prepend" onClick={() => (rows.value = [...buildData(1), ...rows.value])}>Prepend</button>
-          <button id="append" onClick={() => (rows.value = [...rows.value, ...buildData(1)])}>Append</button>
+          <button id="prepend" disabled={isStreaming.value} onClick={() => (rows.value = [...buildData(1), ...rows.value])}>Prepend</button>
+          <button id="append" disabled={isStreaming.value} onClick={() => (rows.value = [...rows.value, ...buildData(1)])}>Append</button>
           <button
             id="sort"
+            disabled={isStreaming.value}
             onClick={() =>
               (rows.value = [...rows.value].toSorted((a, b) =>
                 a.name.localeCompare(b.name)
@@ -104,6 +109,7 @@ export function App() {
           </button>
           <button
             id="filter"
+            disabled={isStreaming.value}
             onClick={() =>
               (rows.value = rows.value.filter((d) => d.id % 2))
             }
@@ -112,6 +118,7 @@ export function App() {
           </button>
           <button
             id="units"
+            disabled={isStreaming.value}
             onClick={() =>
               (unitSystem.value = unitSystem.value === 'imperial' ? 'metric' : 'imperial')
             }
@@ -120,13 +127,14 @@ export function App() {
           </button>
           <button
             id="restock"
+            disabled={isStreaming.value}
             onClick={() =>
               (rows.value = rows.value.map(r => r.availabilityStatus === "Out of Stock" ? { ...r, availabilityStatus: "In Stock" } : r))
             }
           >
             Restock
           </button>
-          <button id="clear" onClick={clear}>Clear</button>
+          <button id="clear" disabled={isStreaming.value} onClick={clear}>Clear</button>
         </div>
       </div>
 

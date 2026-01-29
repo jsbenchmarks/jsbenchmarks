@@ -6,6 +6,7 @@ export default function Row({
   setSelected,
   setRows,
   rows,
+  isStreaming,
   unitSystem,
   weightConversion,
   lengthConversion,
@@ -14,7 +15,7 @@ export default function Row({
   return (
     <tr
       className={selected === row.id ? 'selected' : ''}
-      onClick={() => setSelected(row.id)}
+      onClick={() => !isStreaming && setSelected(row.id)}
     >
       <td>{row.id}</td>
       <td>{row.name}</td>
@@ -38,6 +39,7 @@ export default function Row({
       <td>
         <button
           className="small"
+          disabled={isStreaming}
           onClick={(e) => {
             e.stopPropagation();
             setRows(rows.filter((r) => r.id !== row.id));

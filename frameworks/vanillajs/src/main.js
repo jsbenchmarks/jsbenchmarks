@@ -142,11 +142,21 @@ function create() {
   setHasRows(true);
 }
 
+function setButtonsDisabled(disabled) {
+  const buttons = document.querySelectorAll("button");
+  for (let i = 0; i < buttons.length; i++) {
+    if (buttons[i].id !== "stream") {
+      buttons[i].disabled = disabled;
+    }
+  }
+}
+
 function stream(e) {
   if (stopStreaming) {
     e.target.textContent = "Stream";
     stopStreaming();
     stopStreaming = null;
+    setButtonsDisabled(false);
     return;
   }
   e.target.textContent = "Stop";
@@ -159,19 +169,19 @@ function stream(e) {
   for (let i = 0; i < rows.length; i++) {
     nextBody.appendChild(createRow(rows[i]));
   }
-
+  
   table.replaceChild(nextBody, tbody);
   tbody = nextBody;
   setHasRows(true);
+  setButtonsDisabled(true);
+
+  const trs = tbody.children;
+  const map = new Map();
+  for (let i = 0; i < trs.length; i++) {
+    map.set(trs[i]._id, trs[i]);
+  }
 
   stopStreaming = streamUpdates((updates) => {
-    const trs = tbody.children;
-    // Cache map for faster lookups
-    const map = new Map();
-    for (let i = 0; i < trs.length; i++) {
-      map.set(trs[i]._id, trs[i]);
-    }
-    
     for (const update of updates) {
       const tr = map.get(update.id);
       if (tr) {
@@ -283,6 +293,7 @@ function restock() {
 }
 
 table.onclick = e => {
+  if (stopStreaming) return;
   e.stopPropagation();
   let target = e.target;
   if (target.nodeType === 3) target = target.parentNode;

@@ -10,11 +10,11 @@ import {
     weightConversion,
 } from './App';
 
-function Row({ row }) {
+function Row({ row, isStreaming }) {
   return (
     <tr
       class={isSelected(row.id) ? 'selected' : ''}
-      onClick={() => setSelected(row.id)}
+      onClick={() => !isStreaming && setSelected(row.id)}
     >
       <td>{row.id}</td>
       <td>{row.name}</td>
@@ -39,6 +39,7 @@ function Row({ row }) {
       <td>
         <button
           class="small"
+          disabled={isStreaming}
           onClick={(e) => {
             e.stopPropagation();
             setRows(rows().filter((r) => r.id !== row.id));

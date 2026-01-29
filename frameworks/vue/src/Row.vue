@@ -14,7 +14,7 @@
     <td>{{ row.availabilityStatus }}</td>
     <td>{{ row.rating.toFixed(1) }}</td>
     <td>
-      <button class="small" @click.stop="$emit('delete', row.id)">delete</button>
+      <button class="small" :disabled="isStreaming" @click.stop="$emit('delete', row.id)">delete</button>
     </td>
   </tr>
 </template>
@@ -25,6 +25,7 @@ import { unitmap } from 'common/data';
 defineProps({
   row: Object,
   selected: Number,
+  isStreaming: Boolean,
   unitSystem: String,
   weightConversion: Number,
   lengthConversion: Number,

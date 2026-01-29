@@ -13,17 +13,17 @@ import { RowComponent } from './row.component';
       <div class="header">
         <h1>Angular</h1>
         <div class="actions">
-          <button id="create" (click)="create()">Create</button>
+          <button id="create" [disabled]="!!stopStreaming" (click)="create()">Create</button>
           <button id="stream" (click)="stream()">{{ stopStreaming ? 'Stop' : 'Stream' }}</button>
-          <button id="reverse" (click)="reverse()">Reverse</button>
-          <button id="insert" (click)="insert()">Insert</button>
-          <button id="prepend" (click)="prepend()">Prepend</button>
-          <button id="append" (click)="append()">Append</button>
-          <button id="sort" (click)="sort()">Sort</button>
-          <button id="filter" (click)="filter()">Filter</button>
-          <button id="units" (click)="toggleUnits()">Units</button>
-          <button id="restock" (click)="restock()">Restock</button>
-          <button id="clear" (click)="clear()">Clear</button>
+          <button id="reverse" [disabled]="!!stopStreaming" (click)="reverse()">Reverse</button>
+          <button id="insert" [disabled]="!!stopStreaming" (click)="insert()">Insert</button>
+          <button id="prepend" [disabled]="!!stopStreaming" (click)="prepend()">Prepend</button>
+          <button id="append" [disabled]="!!stopStreaming" (click)="append()">Append</button>
+          <button id="sort" [disabled]="!!stopStreaming" (click)="sort()">Sort</button>
+          <button id="filter" [disabled]="!!stopStreaming" (click)="filter()">Filter</button>
+          <button id="units" [disabled]="!!stopStreaming" (click)="toggleUnits()">Units</button>
+          <button id="restock" [disabled]="!!stopStreaming" (click)="restock()">Restock</button>
+          <button id="clear" [disabled]="!!stopStreaming" (click)="clear()">Clear</button>
         </div>
       </div>
 
@@ -47,6 +47,7 @@ import { RowComponent } from './row.component';
               <tr app-row
                 [row]="row"
                 [selected]="selected()"
+                [isStreaming]="!!stopStreaming"
                 [unitSystem]="unitSystem()"
                 [weightConversion]="weightConversion()"
                 [lengthConversion]="lengthConversion()"
@@ -88,15 +89,17 @@ export class AppComponent {
       this.stopStreaming = null;
       return;
     }
-    this.rows.set(buildData(25));
-    
+    const initialRows = buildData(25);
+    this.rows.set(initialRows);
+
+    const idMap = new Map();
+    for (let i = 0; i < initialRows.length; i++) {
+      idMap.set(initialRows[i].id, i);
+    }
+
     this.stopStreaming = streamUpdates((updates: any[]) => {
       this.rows.update(currentRows => {
         const newRows = [...currentRows];
-        const idMap = new Map();
-        for (let i = 0; i < newRows.length; i++) {
-          idMap.set(newRows[i].id, i);
-        }
         for (const update of updates) {
           const idx = idMap.get(update.id);
           if (idx !== undefined) {

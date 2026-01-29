@@ -1,9 +1,9 @@
 import { unitmap } from 'common/data';
 
-export component Row({ row, selected, weightConversion, lengthConversion, powerConversion, unitSystem, onSelect, onDelete }) {
+export component Row({ row, selected, isStreaming, weightConversion, lengthConversion, powerConversion, unitSystem, onSelect, onDelete }) {
   <tr
     class={selected === row.id ? 'selected' : ''}
-    onClick={() => onSelect(row.id)}
+    onClick={() => !isStreaming && onSelect(row.id)}
   >
     <td>{row.id}</td>
     <td>{row.name}</td>
@@ -19,6 +19,7 @@ export component Row({ row, selected, weightConversion, lengthConversion, powerC
     <td>
       <button
         class="small"
+        disabled={isStreaming}
         onClick={(e) => {
           e.stopPropagation();
           onDelete(row.id);

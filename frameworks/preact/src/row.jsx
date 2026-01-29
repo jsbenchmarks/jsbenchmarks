@@ -1,15 +1,17 @@
 /** @jsxImportSource preact */
 import { unitmap } from 'common/data';
-import { lengthConversion, powerConversion, rows, selected, unitSystem, weightConversion } from './app.jsx';
+import { isStreaming, lengthConversion, powerConversion, rows, selected, unitSystem, weightConversion } from './app.jsx';
 
 export function Row({ row }) {
   const isSelected = selected.value === row.id;
   const handleClick = () => {
+    if (isStreaming.value) return;
     selected.value = row.id;
   };
 
   const deleteRow = (e) => {
     e.stopPropagation();
+    if (isStreaming.value) return;
     rows.value = rows.value.filter((r) => r.id !== row.id);
   };
 
@@ -35,7 +37,7 @@ export function Row({ row }) {
       <td>{row.availabilityStatus}</td>
       <td>{row.rating.toFixed(1)}</td>
       <td>
-        <button class="small" onClick={deleteRow}>delete</button>
+        <button class="small" disabled={isStreaming.value} onClick={deleteRow}>delete</button>
       </td>
     </tr>
   );
