@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { benchmarks as allBenchmarks } from "./tests.js";
 
 function analyzeTrace(trace) {
   const events = trace.traceEvents;
@@ -74,6 +75,8 @@ function analyzeTrace(trace) {
         try {
           const traceData = JSON.parse(await fs.promises.readFile(tracePath, "utf8"));
           meta.duration = analyzeTrace(traceData);
+          // Save back to meta file to cache it
+          await fs.promises.writeFile(metaPath, JSON.stringify(meta, null, 2));
         } catch (e) {
           console.error(`Error analyzing trace ${tracePath}:`, e);
           meta.duration = 0;
@@ -103,8 +106,23 @@ function analyzeTrace(trace) {
     }
   }
 
+  // 3. Sort and Format
   const results = Array.from(frameworksMap.values());
+  const benchmarkOrder = new Map(allBenchmarks.map((b, i) => [b.name, i]));
+
+  function sortBenchmarksCanonical(a, b) {
+    const aIdx = benchmarkOrder.has(a.name) ? benchmarkOrder.get(a.name) : Number.POSITIVE_INFINITY;
+    const bIdx = benchmarkOrder.has(b.name) ? benchmarkOrder.get(b.name) : Number.POSITIVE_INFINITY;
+    if (aIdx !== bIdx) return aIdx - bIdx;
+    return a.name.localeCompare(b.name);
+  }
+
+  for (const result of results) {
+    result.benchmarks.sort(sortBenchmarksCanonical);
+  }
+
   const fileContent = `export const results = ${JSON.stringify(results)};`;
   fs.writeFileSync(outputPath, fileContent);
+
   console.log(`Successfully processed results and wrote to ${outputPath}`);
 })();
