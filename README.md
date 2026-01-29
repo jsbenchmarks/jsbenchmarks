@@ -19,7 +19,7 @@ This project acts as a benchmarking tool for various JavaScript frameworks. It i
 - **Maintenance**: Frameworks must be actively maintained. (Specific criteria TBD).
 - **Single Submission**: Only one submission per framework is allowed. Exceptions may be granted for major version changes or significant features in beta.
 - **Component Structure**: Table rows must be implemented as a separate component. This ensures the benchmark correctly measures the efficiency of the framework's component abstraction.
-- **Idiomatic Code**: Implementations must follow idiomatic patterns. "Cheating" techniques such as manual DOM manipulation or manual event delegation are prohibited, with the sole exception of the Vanilla JS implementation.
+- **Idiomatic Code**: Implementations must use plain, idiomatic patterns you would expect to see in official documentation or "getting started" guides. The intent is to benchmark frameworks as they are typically used, and to highlight frameworks that are performant or efficient by default. "Cheating" techniques such as manual DOM manipulation or manual event delegation are prohibited (with the sole exception of the Vanilla JS implementation). This is an area with judgment calls; if a framework has special performance-oriented capabilities (special props, flags, etc.), those may be considered for a separate `*-opt` implementation in the future.
 
 ## Running Benchmarks Locally
 
