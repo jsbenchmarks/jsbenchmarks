@@ -31,6 +31,8 @@ npm i
 npm run serve
 ```
 
+Now you can see the built implementation at http://localhost:3000/frameworks/vanillajs/dist/.
+
 3. In another terminal, run the benchmarks (requires the server):
 
 ```bash
@@ -53,6 +55,7 @@ npm run dev
 
 - `--frameworks` / `-f`: Comma-separated list of frameworks (directory names under `frameworks/`). Default: all frameworks.
 - `--benchmarks` / `-b`: Comma-separated list of benchmarks to run. Default: all benchmarks.
+- `--runs 2`: Run the benchmarks only 2 times. Default: 16 runs.
 - `--help` / `-h`: Show help.
 
 Examples:

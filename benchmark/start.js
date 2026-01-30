@@ -7,6 +7,7 @@ import { hideBin } from "yargs/helpers";
 import * as zlib from "zlib";
 import { prepare } from "./prepare.js";
 import { benchmarks as allBenchmarks } from "./tests.js";
+import { analyzeTrace } from './trace.js';
 
 const gzip = util.promisify(zlib.gzip);
 const brotli = util.promisify(zlib.brotliCompress);
@@ -433,8 +434,13 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
               path.join("results", "public", "traces", `${traceFilename}.meta.json`),
               JSON.stringify(meta, null, 2)
             );
-
-            let logMsg = { trace: traceFilename, memory: (memory / 1024 / 1024).toFixed(1) + "MB" };
+            const tracePath = path.join("results", "public", "traces", traceFilename);
+            const duration = analyzeTrace(JSON.parse(await fs.promises.readFile(tracePath, "utf8")));
+            const durationRounded = Math.round(duration * 10) / 10;
+            const logMsg = {
+              duration: durationRounded,
+              memory: (memory / 1024 / 1024).toFixed(1) + "MB",
+            };
             console.log(`${fw} ${benchmark.name}:`, logMsg);
           } catch (e) {
             console.error(`Failed to benchmark ${fw} (${benchmark.name}, run ${runIndex + 1}):`, e);
