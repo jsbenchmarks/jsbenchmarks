@@ -251,11 +251,7 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
     .option("benchmarks", {
       alias: "b",
       type: "string",
-      description: "A comma-separated list of benchmarks to run (e.g., 'create,select,clear')",
-    })
-    .option("skip-benchmarks", {
-      type: "boolean",
-      description: "Skip running benchmarks, only update stats and sizes",
+      description: "A comma-separated list of benchmarks to run (e.g., 'create,bundle,popularity,stream')",
     })
     .option("runs", {
       type: "number",
@@ -265,74 +261,98 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
       type: "boolean",
       description: "Skip npm install and npm run build steps",
     })
+    .option("headless", {
+      type: "boolean",
+      default: true,
+      description: "Run browser in headless mode",
+    })
     .help()
     .alias("help", "h")
     .argv;
+
+  // Server Readiness Check
+  try {
+    await fetch("http://localhost:3000");
+  } catch (e) {
+    console.error("Error: Local server is not running on http://localhost:3000. Please start it before running benchmarks.");
+    process.exit(1);
+  }
 
   // Ensure directories exist
   await fs.promises.mkdir("results/frameworks", { recursive: true });
   await fs.promises.mkdir("results/public/traces", { recursive: true });
 
   let frameworks;
-  let benchmarks = allBenchmarks;
-  const requestedBenchmarkNames = argv.benchmarks
-    ? argv.benchmarks.split(",").map(b => b.trim()).filter(Boolean)
-    : null;
-
-  const STREAM_BENCHMARK_NAME = "stream";
-  const shouldRunStream = !requestedBenchmarkNames || requestedBenchmarkNames.includes(STREAM_BENCHMARK_NAME);
-
-  if (argv.benchmarks) {
-    benchmarks = benchmarks.filter(t => requestedBenchmarkNames.includes(t.name));
-  }
   if (argv.frameworks) {
     frameworks = argv.frameworks.split(",").map(f => f.trim());
   } else {
     frameworks = (await fs.promises.readdir("./frameworks"));
   }
 
+  // Parse Benchmark Selection
+  const BUNDLE = "bundle";
+  const POPULARITY = "popularity";
+  const STREAM = "stream";
+
+  const requested = argv.benchmarks
+    ? argv.benchmarks.split(",").map(b => b.trim()).filter(Boolean)
+    : null;
+
+  const runBundle = !requested || requested.includes(BUNDLE);
+  const runPopularity = !requested || requested.includes(POPULARITY);
+  const runStream = !requested || requested.includes(STREAM);
+
+  // Filter interactive benchmarks
+  const benchmarks = requested
+    ? allBenchmarks.filter(t => requested.includes(t.name))
+    : allBenchmarks;
+
+  const runInteractive = benchmarks.length > 0;
+  const needsBrowser = runInteractive || runStream;
+
   await prepare(frameworks, argv.skipBuild);
 
   // Targeted cleanup of previous runs for the selected frameworks/benchmarks
-  if (!argv.skipBenchmarks) {
-    const tracesDir = path.join("results", "public", "traces");
-    const existingFiles = await fs.promises.readdir(tracesDir);
-    for (const fw of frameworks) {
-      const benchmarkNamesToClean = [
-        ...benchmarks.map(b => b.name),
-        ...(shouldRunStream ? [STREAM_BENCHMARK_NAME] : []),
-      ];
+  const tracesDir = path.join("results", "public", "traces");
+  const existingFiles = await fs.promises.readdir(tracesDir);
+  for (const fw of frameworks) {
+    const benchmarkNamesToClean = [
+      ...benchmarks.map(b => b.name),
+      ...(runStream ? [STREAM] : []),
+    ];
 
-      for (const benchName of benchmarkNamesToClean) {
-        const prefix = `${fw}-${benchName}-`;
-        for (const file of existingFiles) {
-          if (file.startsWith(prefix)) {
-            await fs.promises.unlink(path.join(tracesDir, file)).catch(() => { });
-          }
+    for (const benchName of benchmarkNamesToClean) {
+      const prefix = `${fw}-${benchName}-`;
+      for (const file of existingFiles) {
+        if (file.startsWith(prefix)) {
+          await fs.promises.unlink(path.join(tracesDir, file)).catch(() => { });
         }
       }
     }
   }
 
-  const browser = await puppeteer.launch({
-    headless: false,
-    args: [
-      "--js-flags=--expose-gc",
-      "--enable-precise-memory-info",
-      "--window-size=1200,850",
-      "--no-default-browser-check",
-      "--disable-sync",
-      "--no-first-run",
-      "--disable-gpu-vsync",
-      "--disable-frame-rate-limit",
-      "--ash-no-nudges",
-      "--disable-background-timer-throttling",
-      "--disable-backgrounding-occluded-windows",
-      "--disable-renderer-backgrounding",
-      "--disable-extensions",
-      "--disable-features=Translate,PrivacySandboxSettings4,IPH_SidePanelGenericMenuFeature",
-    ],
-  });
+  let browser;
+  if (needsBrowser) {
+    browser = await puppeteer.launch({
+      headless: argv.headless,
+      args: [
+        "--js-flags=--expose-gc",
+        "--enable-precise-memory-info",
+        "--window-size=1200,850",
+        "--no-default-browser-check",
+        "--disable-sync",
+        "--no-first-run",
+        "--disable-gpu-vsync",
+        "--disable-frame-rate-limit",
+        "--ash-no-nudges",
+        "--disable-background-timer-throttling",
+        "--disable-backgrounding-occluded-windows",
+        "--disable-renderer-backgrounding",
+        "--disable-extensions",
+        "--disable-features=Translate,PrivacySandboxSettings4,IPH_SidePanelGenericMenuFeature",
+      ],
+    });
+  }
 
   const frameworkEntries = [];
   for (const fw of frameworks) {
@@ -348,44 +368,61 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
         }
       }
 
-      const result = {
+      // Load existing result to preserve data if we are doing a partial run
+      const resultPath = path.join("results", "frameworks", `${fw}.json`);
+      let result = {
         framework: fw,
         benchmarks: [], // We don't need to prepopulate this for the file
         website: pkg.jsbenchmarks ? pkg.jsbenchmarks.website : pkg.website,
         version: version.replace(/^\^|~/, "")
       };
 
-      const stats = await fetchStats(pkg.jsbenchmarks?.package);
-      result.stars = stats.stars;
-      result.downloads = stats.downloads;
-      result.gitHubUrl = stats.url;
+      try {
+        const existing = JSON.parse(await fs.promises.readFile(resultPath, "utf8"));
+        result = { ...result, ...existing, version: result.version }; // Ensure version/static fields update
+      } catch (e) {
+        // No existing file, start fresh
+      }
 
-      const implPath = `frameworks/${fw}/dist`;
-      const sizes = await calculateSizes(`./${implPath}`);
-      result.gzipBundle = sizes.gzip;
-      result.rawBundle = sizes.raw;
-      result.brotliBundle = sizes.brotli;
+      if (runPopularity) {
+        const stats = await fetchStats(pkg.jsbenchmarks?.package);
+        result.stars = stats.stars;
+        result.downloads = stats.downloads;
+        result.gitHubUrl = stats.url;
+      }
+
+      if (runBundle) {
+        const implPath = `frameworks/${fw}/dist`;
+        const sizes = await calculateSizes(`./${implPath}`);
+        result.gzipBundle = sizes.gzip;
+        result.rawBundle = sizes.raw;
+        result.brotliBundle = sizes.brotli;
+        console.log(`${fw} bundle: gzip ${Math.round(sizes.gzip / 100) / 10}KB, raw ${Math.round(sizes.raw / 100) / 10}KB, brotli ${Math.round(sizes.brotli / 100) / 10}KB`);
+      }
 
       // Save framework metadata immediately
       await fs.promises.writeFile(
-        path.join("results", "frameworks", `${fw}.json`),
+        resultPath,
         JSON.stringify(result, null, 2)
       );
 
-      const uri = `http://localhost:3000/${implPath}/`;
-      const isKeyed = await checkKeyed(browser, uri);
-      if (!isKeyed) {
-        throw new Error(`${fw} behaves as NON-KEYED (should be KEYED)`);
+      const uri = `http://localhost:3000/frameworks/${fw}/dist/`;
+
+      // Check Keyed only if we have a browser running
+      if (needsBrowser) {
+        const isKeyed = await checkKeyed(browser, uri);
+        if (!isKeyed) {
+          throw new Error(`${fw} behaves as NON-KEYED (should be KEYED)`);
+        }
       }
 
-      console.log(`${fw} bundle: gzip ${Math.round(sizes.gzip / 100) / 10}KB, raw ${Math.round(sizes.raw / 100) / 10}KB, brotli ${Math.round(sizes.brotli / 100) / 10}KB`);
       frameworkEntries.push({ fw, uri, result });
     } catch (e) {
       console.error(`Failed to benchmark ${fw}:`, e);
     }
   }
 
-  if (!argv.skipBenchmarks) {
+  if (runInteractive) {
     const maxRuns = argv.runs ?? benchmarks.reduce((max, b) => Math.max(max, b.runs ?? 0), 0);
 
     for (let runIndex = 0; runIndex < maxRuns; runIndex++) {
@@ -458,7 +495,7 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
     }
   }
 
-  if (!argv.skipBenchmarks && shouldRunStream) {
+  if (runStream) {
     // Click Stream to start the streaming, then sample average memory/cpu.
     const streamDurationMs = 60_000;
     const streamRuns = 1;
@@ -484,36 +521,37 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
             page,
             { click: "#stream", duration: streamDurationMs },
             fw.fw,
-            STREAM_BENCHMARK_NAME,
+            STREAM,
             runIndex
           );
 
           // Save measurement metadata
           const meta = {
             framework: fw.fw,
-            benchmark: STREAM_BENCHMARK_NAME,
+            benchmark: STREAM,
             runIndex,
             memory: avgMemory,
             cpu: avgCpu,
           };
           
           await fs.promises.writeFile(
-            path.join("results", "public", "traces", `${fw.fw}-${STREAM_BENCHMARK_NAME}-${runIndex}.json.meta.json`),
+            path.join("results", "public", "traces", `${fw.fw}-${STREAM}-${runIndex}.json.meta.json`),
             JSON.stringify(meta, null, 2)
           );
 
           let logMsg = { memory: (avgMemory / 1024 / 1024).toFixed(1) + "MB" };
           if (avgCpu !== undefined) logMsg.cpu = avgCpu.toFixed(1) + "%";
-          console.log(`${fw.fw} ${STREAM_BENCHMARK_NAME}:`, logMsg);
+          console.log(`${fw.fw} ${STREAM}:`, logMsg);
         } catch (e) {
-          console.error(`Failed to benchmark ${fw.fw} (${STREAM_BENCHMARK_NAME}, run ${runIndex + 1}):`, e);
+          console.error(`Failed to benchmark ${fw.fw} (${STREAM}, run ${runIndex + 1}):`, e);
         } finally {
           if (page) await page.close();
         }
       }
     }
   }
-  await browser.close();
+  
+  if (browser) await browser.close();
 
   const duration = performance.now() - start;
   const minutes = Math.floor(duration / 1000 / 60);
