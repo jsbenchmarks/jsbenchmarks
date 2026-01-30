@@ -60,13 +60,13 @@ export const BundleTable = ({ rows, sortConfig, onSort }: BundleTableProps) => {
                 {row.normalCompositeBundle?.toFixed(2)}
               </td>
               <td className="BundleTable-td" style={{ color: color(row.normalRawBundle!) }}>
-                {(row.rawBundle / 1e3).toFixed(1)}KB ({row.normalRawBundle?.toFixed(2)})
+                {(row.rawBundle / 1e3).toFixed(1)}KB <span className="BundleTable-factor">({row.normalRawBundle?.toFixed(2)})</span>
               </td>
               <td className="BundleTable-td" style={{ color: color(row.normalGzipBundle!) }}>
-                {(row.gzipBundle / 1e3).toFixed(1)}KB ({row.normalGzipBundle?.toFixed(2)})
+                {(row.gzipBundle / 1e3).toFixed(1)}KB <span className="BundleTable-factor">({row.normalGzipBundle?.toFixed(2)})</span>
               </td>
               <td className="BundleTable-td" style={{ color: color(row.normalBrotliBundle!) }}>
-                {(row.brotliBundle / 1e3).toFixed(1)}KB ({row.normalBrotliBundle?.toFixed(2)})
+                {(row.brotliBundle / 1e3).toFixed(1)}KB <span className="BundleTable-factor">({row.normalBrotliBundle?.toFixed(2)})</span>
               </td>
             </tr>
           ))}

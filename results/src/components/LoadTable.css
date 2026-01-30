@@ -112,3 +112,10 @@
   font-weight: normal;
 }
 
+
+.LoadTable-factor {
+  font-size: 0.85em;
+  font-weight: normal;
+  opacity: 0.8;
+  margin-left: 4px;
+}

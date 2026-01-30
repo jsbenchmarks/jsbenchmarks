@@ -74,7 +74,7 @@ export const DurationTable = ({ rows, benchmarkNames, sortConfig, onSort, select
                       {bm?.duration ? `${bm.duration.toFixed(1)} ± ${bm.durationMOE?.toFixed(1)} ` : ""}
                       {bm?.name === COMPOSITE_NAME
                         ? (bm?.normalDuration ? `${bm.normalDuration.toFixed(2)}${bm.normalDurationMOE !== undefined ? ` ± ${bm.normalDurationMOE.toFixed(2)}` : ''}` : "")
-                        : (bm?.normalDuration ? `(${bm.normalDuration.toFixed(2)})` : "")}
+                        : (bm?.normalDuration ? <span className="DurationTable-factor">({bm.normalDuration.toFixed(2)})</span> : "")}
                     </td>
                   );
                 })}

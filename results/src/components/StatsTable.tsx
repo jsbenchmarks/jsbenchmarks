@@ -71,13 +71,13 @@ export const StatsTable = ({ rows, sortConfig, onSort }: StatsTableProps) => {
                 {row.normalCompositeStats?.toFixed(2)}
               </td>
               <td className="StatsTable-td" style={{ color: color(row.normalStars!) }}>
-                {formatNumber(row.stars)}
+                {formatNumber(row.stars)} <span className="StatsTable-factor">({row.normalStars?.toFixed(2)})</span>
               </td>
               <td className="StatsTable-td" style={{ color: color(row.normalDownloads!) }}>
-                {formatNumber(row.downloads)}
+                {formatNumber(row.downloads)} <span className="StatsTable-factor">({row.normalDownloads?.toFixed(2)})</span>
               </td>
               <td className="StatsTable-td" style={{ color: color(row.normalRecentCommits!) }}>
-                {formatNumber(row.recentCommits)}
+                {formatNumber(row.recentCommits)} <span className="StatsTable-factor">({row.normalRecentCommits?.toFixed(2)})</span>
               </td>
             </tr>
           ))}

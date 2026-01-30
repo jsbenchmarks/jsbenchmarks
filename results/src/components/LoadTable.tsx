@@ -148,7 +148,7 @@ export const LoadTable = ({ rows, benchmarkNames, sortConfig, onSort }: LoadTabl
                         style={cpuColor ? { color: cpuColor } : {}}
                       >
                         {formatCpu(bm?.cpu)}
-                        {bm?.normalCpu ? ` (${bm.normalCpu.toFixed(2)})` : ''}
+                        {bm?.normalCpu ? <span className="LoadTable-factor">({bm.normalCpu.toFixed(2)})</span> : ''}
                       </td>
                       <td
                         key={`${row.framework}-${name}-memory`}
@@ -156,7 +156,7 @@ export const LoadTable = ({ rows, benchmarkNames, sortConfig, onSort }: LoadTabl
                         style={memColor ? { color: memColor } : {}}
                       >
                         {formatMemMB(bm?.memory)}
-                        {bm?.normalMemory ? ` (${bm.normalMemory.toFixed(2)})` : ''}
+                        {bm?.normalMemory ? <span className="LoadTable-factor">({bm.normalMemory.toFixed(2)})</span> : ''}
                       </td>
                     </Fragment>
                   );

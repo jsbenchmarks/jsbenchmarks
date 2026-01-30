@@ -74,7 +74,7 @@ export const MemoryTable = ({ rows, benchmarkNames, sortConfig, onSort, selected
                       {bm?.memory ? ` ${(bm.memory / 1e6).toFixed(1)} ± ${(bm.memoryMOE! / 1e6).toFixed(2)} ` : ""}
                       {bm?.name === COMPOSITE_NAME
                         ? (bm?.normalMemory ? `${bm.normalMemory.toFixed(2)}${bm.normalMemoryMOE !== undefined ? ` ± ${bm.normalMemoryMOE.toFixed(2)}` : ''}` : "")
-                        : (bm?.normalMemory ? `(${bm.normalMemory.toFixed(2)})` : "")}
+                        : (bm?.normalMemory ? <span className="MemoryTable-factor">({bm.normalMemory.toFixed(2)})</span> : "")}
                     </td>
                   );
                 })}

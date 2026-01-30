@@ -277,7 +277,7 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
     })
     .option("headless", {
       type: "boolean",
-      default: true,
+      default: false,
       description: "Run browser in headless mode",
     })
     .help()
