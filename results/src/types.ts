@@ -35,6 +35,7 @@ export interface RawResult {
   version?: string;
   stars?: number;
   downloads?: number;
+  recentCommits?: number;
   gitHubUrl?: string;
 }
 
@@ -45,6 +46,7 @@ export interface Result extends RawResult {
   normalCompositeBundle?: number;
   normalStars?: number;
   normalDownloads?: number;
+  normalRecentCommits?: number;
   normalCompositeStats?: number;
 }
 

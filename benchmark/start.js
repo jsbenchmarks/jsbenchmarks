@@ -17,6 +17,7 @@ async function fetchStats(packageName) {
 
   let stars = 0;
   let downloads = 0;
+  let recentCommits = 0;
   let url = undefined;
 
   try {
@@ -45,13 +46,26 @@ async function fetchStats(packageName) {
           const ghData = await githubRes.json();
           stars = ghData.stargazers_count || 0;
         }
+
+        // Fetch commits in the last 30 days
+        const sinceDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        let page = 1;
+        while (true) {
+          const commitsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=100&since=${sinceDate}&page=${page}`);
+          if (!commitsRes.ok) break;
+          const commitsData = await commitsRes.json();
+          if (!Array.isArray(commitsData) || commitsData.length === 0) break;
+          recentCommits += commitsData.length;
+          if (commitsData.length < 100) break;
+          page++;
+        }
       }
     }
   } catch (e) {
     console.error(`Failed to fetch repo info for ${packageName}:`, e.message);
   }
 
-  return { stars, downloads, url };
+  return { stars, downloads, recentCommits, url };
 }
 
 async function calculateSizes(directoryPath) {
@@ -388,6 +402,7 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
         const stats = await fetchStats(pkg.jsbenchmarks?.package);
         result.stars = stats.stars;
         result.downloads = stats.downloads;
+        result.recentCommits = stats.recentCommits;
         result.gitHubUrl = stats.url;
       }
 

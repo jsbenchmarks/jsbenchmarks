@@ -46,6 +46,12 @@ export const StatsTable = ({ rows, sortConfig, onSort }: StatsTableProps) => {
                 <SortIndicator active={sortConfig.key === 'downloads'} dir={sortConfig.dir} />
               </div>
             </th>
+            <th className="StatsTable-th StatsTable-sortable" onClick={() => onSort('recentCommits')}>
+              <div className="StatsTable-header-content">
+                maintenance score
+                <SortIndicator active={sortConfig.key === 'recentCommits'} dir={sortConfig.dir} />
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -69,6 +75,9 @@ export const StatsTable = ({ rows, sortConfig, onSort }: StatsTableProps) => {
               </td>
               <td className="StatsTable-td" style={{ color: color(row.normalDownloads!) }}>
                 {formatNumber(row.downloads)}
+              </td>
+              <td className="StatsTable-td" style={{ color: color(row.normalRecentCommits!) }}>
+                {formatNumber(row.recentCommits)}
               </td>
             </tr>
           ))}
