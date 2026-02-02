@@ -12,62 +12,6 @@ import { analyzeTrace } from './trace.js';
 const gzip = util.promisify(zlib.gzip);
 const brotli = util.promisify(zlib.brotliCompress);
 
-async function fetchStats(packageName) {
-  if (!packageName) return { stars: 0, downloads: 0 };
-
-  let stars = 0;
-  let downloads = 0;
-  let recentCommits = 0;
-  let url = undefined;
-
-  try {
-    const downloadRes = await fetch(`https://api.npmjs.org/downloads/point/last-week/${packageName}`);
-    if (downloadRes.ok) {
-      const data = await downloadRes.json();
-      downloads = data.downloads || 0;
-    }
-  } catch (e) {
-    console.error(`Failed to fetch downloads for ${packageName}:`, e.message);
-  }
-
-  try {
-    const registryRes = await fetch(`https://registry.npmjs.org/${packageName}`);
-    if (registryRes.ok) {
-      const data = await registryRes.json();
-      const repoUrl = data.repository?.url || "";
-      const match = repoUrl.match(/github\.com[\/:]([^\/]+)\/([^\/]+)/);
-      if (match) {
-        const owner = match[1];
-        let repo = match[2];
-        if (repo.endsWith('.git')) repo = repo.slice(0, -4);
-        url = `https://github.com/${owner}/${repo}`;
-        const githubRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
-        if (githubRes.ok) {
-          const ghData = await githubRes.json();
-          stars = ghData.stargazers_count || 0;
-        }
-
-        // Fetch commits in the last 30 days
-        const sinceDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        let page = 1;
-        while (true) {
-          const commitsRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=100&since=${sinceDate}&page=${page}`);
-          if (!commitsRes.ok) break;
-          const commitsData = await commitsRes.json();
-          if (!Array.isArray(commitsData) || commitsData.length === 0) break;
-          recentCommits += commitsData.length;
-          if (commitsData.length < 100) break;
-          page++;
-        }
-      }
-    }
-  } catch (e) {
-    console.error(`Failed to fetch repo info for ${packageName}:`, e.message);
-  }
-
-  return { stars, downloads, recentCommits, url };
-}
-
 async function calculateSizes(directoryPath) {
   const files = await fs.promises.readdir(directoryPath);
   let totalRaw = 0;
@@ -305,7 +249,6 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
 
   // Parse Benchmark Selection
   const BUNDLE = "bundle";
-  const POPULARITY = "popularity";
   const STREAM = "stream";
 
   const requested = argv.benchmarks
@@ -313,7 +256,6 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
     : null;
 
   const runBundle = !requested || requested.includes(BUNDLE);
-  const runPopularity = !requested || requested.includes(POPULARITY);
   const runStream = !requested || requested.includes(STREAM);
 
   // Filter interactive benchmarks
@@ -396,14 +338,6 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
         result = { ...result, ...existing, version: result.version }; // Ensure version/static fields update
       } catch (e) {
         // No existing file, start fresh
-      }
-
-      if (runPopularity) {
-        const stats = await fetchStats(pkg.jsbenchmarks?.package);
-        result.stars = stats.stars;
-        result.downloads = stats.downloads;
-        result.recentCommits = stats.recentCommits;
-        result.gitHubUrl = stats.url;
       }
 
       if (runBundle) {

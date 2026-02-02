@@ -47,9 +47,6 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
   let bestGzipBund = 1e12;
   let bestRawBund = 1e12;
   let bestBrotliBund = 1e12;
-  let maxStars = 0;
-  let maxDownloads = 0;
-  let maxRecentCommits = 0;
 
   for (const result of results) {
     for (const bm of result.benchmarks) {
@@ -110,9 +107,6 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
     bestGzipBund = Math.min(bestGzipBund, result.gzipBundle);
     bestRawBund = Math.min(bestRawBund, result.rawBundle);
     bestBrotliBund = Math.min(bestBrotliBund, result.brotliBundle);
-    maxStars = Math.max(maxStars, result.stars ?? 0);
-    maxDownloads = Math.max(maxDownloads, result.downloads ?? 0);
-    maxRecentCommits = Math.max(maxRecentCommits, result.recentCommits ?? 0);
   }
 
   for (const result of results) {
@@ -205,14 +199,6 @@ export function calculateResults(input: RawResult[], selectedBenchmarks?: Set<st
     result.normalBrotliBundle = result.brotliBundle / bestBrotliBund;
     result.normalCompositeBundle = Math.pow(
       result.normalGzipBundle * result.normalRawBundle * result.normalBrotliBundle,
-      1 / 3
-    );
-
-    result.normalStars = maxStars / Math.max(1, result.stars ?? 0);
-    result.normalDownloads = maxDownloads / Math.max(1, result.downloads ?? 0);
-    result.normalRecentCommits = maxRecentCommits / Math.max(1, result.recentCommits ?? 0);
-    result.normalCompositeStats = Math.pow(
-      result.normalStars * result.normalDownloads * result.normalRecentCommits,
       1 / 3
     );
   }

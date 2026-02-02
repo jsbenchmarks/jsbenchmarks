@@ -33,9 +33,6 @@ export interface RawResult {
   brotliBundle: number;
   website?: string;
   version?: string;
-  stars?: number;
-  downloads?: number;
-  recentCommits?: number;
   gitHubUrl?: string;
 }
 
@@ -44,10 +41,6 @@ export interface Result extends RawResult {
   normalRawBundle?: number;
   normalBrotliBundle?: number;
   normalCompositeBundle?: number;
-  normalStars?: number;
-  normalDownloads?: number;
-  normalRecentCommits?: number;
-  normalCompositeStats?: number;
 }
 
 export type SortDirection = 'asc' | 'desc';

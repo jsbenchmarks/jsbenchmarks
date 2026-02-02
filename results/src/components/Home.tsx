@@ -6,7 +6,6 @@ import { BundleTable } from './BundleTable';
 import { DurationTable } from './DurationTable';
 import { LoadTable, type LoadSortKey } from './LoadTable';
 import { MemoryTable } from './MemoryTable';
-import { StatsTable } from './StatsTable';
 
 const inputData = rawResults as RawResult[];
 const allBenchmarkNames = (() => {
@@ -28,7 +27,6 @@ export function Home() {
   const [loadSort, setLoadSort] = useState<SortConfig<LoadSortKey>>({ key: COMPOSITE_NAME, dir: 'asc' });
 
   const [bundleSort, setBundleSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeBundle', dir: 'asc' });
-  const [statsSort, setStatsSort] = useState<SortConfig<keyof Result>>({ key: 'normalCompositeStats', dir: 'asc' });
 
   const [selectedDurationBenchmarks, setSelectedDurationBenchmarks] = useState<Set<string>>(new Set(allBenchmarkNames));
   const [selectedMemoryBenchmarks, setSelectedMemoryBenchmarks] = useState<Set<string>>(new Set(allBenchmarkNames));
@@ -59,13 +57,6 @@ export function Home() {
 
   const handleBundleSort = (key: keyof Result) => {
     setBundleSort(prev => ({
-      key,
-      dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc'
-    }));
-  };
-
-  const handleStatsSort = (key: keyof Result) => {
-    setStatsSort(prev => ({
       key,
       dir: prev.key === key && prev.dir === 'asc' ? 'desc' : 'asc'
     }));
@@ -190,16 +181,6 @@ export function Home() {
     return copy;
   }, [baseRows, bundleSort]);
 
-  const statsRows = useMemo(() => {
-    const copy = baseRows.filter(r => r.framework !== 'vanillajs');
-    copy.sort((a, b) => {
-        const aVal = a[statsSort.key] ?? 0;
-        const bVal = b[statsSort.key] ?? 0;
-        return statsSort.dir === 'asc' ? (aVal < bVal ? -1 : 1) : (aVal > bVal ? -1 : 1);
-    });
-    return copy;
-  }, [baseRows, statsSort]);
-
   const durationTableNames = useMemo(() => [COMPOSITE_NAME, ...standardBenchmarks], [standardBenchmarks]);
   const memoryTableNames = useMemo(() => [COMPOSITE_NAME, ...standardBenchmarks], [standardBenchmarks]);
   const loadTableNames = useMemo(() => [COMPOSITE_NAME, ...loadBenchmarks], [loadBenchmarks]);
@@ -252,12 +233,6 @@ export function Home() {
         rows={bundleRows}
         sortConfig={bundleSort}
         onSort={handleBundleSort}
-      />
-      <h2 className="App-h2">Popularity</h2>
-      <StatsTable
-        rows={statsRows}
-        sortConfig={statsSort}
-        onSort={handleStatsSort}
       />
     </main>
   );
