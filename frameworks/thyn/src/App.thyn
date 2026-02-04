@@ -29,8 +29,8 @@
     data(newData);
 
     const idMap = new Map();
-    for (let i = 0; i < newData.length; i++) {
-      idMap.set(newData[i].id, newData[i]);
+    for (const d of newData) {
+      idMap.set(d.id, d);
     }
 
     const stop = streamUpdates(update => {
