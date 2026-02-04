@@ -1,9 +1,14 @@
 <script>
   import {buildData as buildRawData, unitmap} from "common/data.js";
-  import {data, unitSystem} from "./state.thyn.js";
+  import {streamUpdates} from "common/streaming.js";
+  import {data, unitSystem, stopStreaming} from "./state.thyn.js";
   import Row from "./Row.thyn";
 
   function buildData(cnt) {
+    if (stopStreaming()) {
+      stopStreaming()();
+      stopStreaming(null);
+    }
     return buildRawData(cnt).map(row => ({
       ...row,
       availabilityStatus: $signal(row.availabilityStatus),
@@ -13,27 +18,58 @@
   function restock() {
     data().forEach(r => r.availabilityStatus() === "Out of Stock" ? r.availabilityStatus("In Stock") : null);
   }
+  function stream() {
+    if (stopStreaming()) {
+      stopStreaming()();
+      stopStreaming(null);
+      return;
+    }
+
+    const newData = buildData(25);
+    data(newData);
+
+    const idMap = new Map();
+    for (let i = 0; i < newData.length; i++) {
+      idMap.set(newData[i].id, newData[i]);
+    }
+
+    const stop = streamUpdates(update => {
+      const row = idMap.get(update.id);
+      if (row) {
+        if (update.price) row.price(update.price);
+        if (update.availabilityStatus) row.availabilityStatus(update.availabilityStatus);
+      }
+    });
+    stopStreaming(() => stop);
+  }
 </script>
 
 <main>
   <div class="header">
     <h1>Thyn</h1>
     <div class="actions">
-      <button id="create" onclick={() => data(buildData(1000))}>Create</button>
-      <button id="reverse" onclick={() => data(d => d.slice().reverse())}>Reverse</button>
-      <button id="insert"
+      <button id="create" disabled={!!stopStreaming()} onclick={() => data(buildData(1000))}>Create</button>
+      <button id="stream" onclick={stream}>{{ stopStreaming() ? 'Stop' : 'Stream' }}</button>
+      <button id="reverse" disabled={!!stopStreaming()} onclick={() => data(d => d.slice().reverse())}>Reverse</button>
+      <button id="insert" disabled={!!stopStreaming()}
         onclick={() => data(d => [...d.slice(0, 10), ...buildData(1), ...d.slice(10)])}>Insert</button>
-      <button id="prepend" onclick={() => data(d => [...buildData(1), ...d])}>Prepend</button>
-      <button id="append" onclick={() => data(d => [...d, ...buildData(1)])}>Append</button>
-      <button id="sort" onclick={() => data(d => {
+      <button id="prepend" disabled={!!stopStreaming()} onclick={() => data(d => [...buildData(1), ...d])}>Prepend</button>
+      <button id="append" disabled={!!stopStreaming()} onclick={() => data(d => [...d, ...buildData(1)])}>Append</button>
+      <button id="sort" disabled={!!stopStreaming()} onclick={() => data(d => {
         const copy = d.slice();
         copy.sort((a, b) => a.name < b.name ? -1 : 1);
         return copy;
       })}>Sort</button>
-      <button id="filter" onclick={() => data(d => d.filter(d => d.id % 2))}>Filter</button>
-      <button id="units" onclick={() => unitSystem(u => u === 'metric' ? 'imperial' : 'metric')}>Units</button>
-      <button id="restock" onclick={restock}>Restock</button>
-      <button id="clear" onclick={() => data([])}>Clear</button>
+      <button id="filter" disabled={!!stopStreaming()} onclick={() => data(d => d.filter(d => d.id % 2))}>Filter</button>
+      <button id="units" disabled={!!stopStreaming()} onclick={() => unitSystem(u => u === 'metric' ? 'imperial' : 'metric')}>Units</button>
+      <button id="restock" disabled={!!stopStreaming()} onclick={restock}>Restock</button>
+      <button id="clear" disabled={!!stopStreaming()} onclick={() => {
+        if (stopStreaming()) {
+          stopStreaming()();
+          stopStreaming(null);
+        }
+        data([]);
+      }}>Clear</button>
     </div>
   </div>
   <h2 class="text-center" #if={data().length === 0}>

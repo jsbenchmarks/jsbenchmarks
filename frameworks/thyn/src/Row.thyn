@@ -1,12 +1,15 @@
 <script>
-  import {unitmap} from "common/data.js";
   import {
     data,
     selected,
     unitSystem,
+    stopStreaming,
     lengthConversion,
     powerConversion,
     weightConversion,
+    powerUnits,
+    lengthUnits,
+    weightUnits,
   } from "./state.thyn.js";
 
   const {
@@ -25,12 +28,15 @@
   } = $props;
 </script>
 
-<tr class={selected() === id ? 'selected' : undefined} onclick={() => selected(s => s === id ? null : id)}>
+<tr
+  class={selected() === id ? 'selected' : undefined}
+  onclick={() => !stopStreaming() && selected(s => s === id ? null : id)}
+>
   <td>{{ id }}</td>
   <td>{{ name }}</td>
   <td>
     {{ (weight * weightConversion()).toFixed(1) }}
-    {{ unitmap.weight[unitSystem()] }}
+    {{ weightUnits() }}
   </td>
   <td>
     {{ (height * lengthConversion()).toFixed(1) }}
@@ -38,17 +44,21 @@
     {{ (width * lengthConversion()).toFixed(1) }}
     x
     {{ (depth * lengthConversion()).toFixed(1) }}
-    {{ unitmap.length[unitSystem()] }}
+    {{ lengthUnits() }}
   </td>
   <td>
     {{ (powerConsumption * powerConversion()).toFixed(1) }}
-    {{ unitmap.power[unitSystem()] }}
+    {{ powerUnits() }}
   </td>
   <td>${{ price().toFixed(2) }}</td>
   <td>{{ availabilityStatus() }}</td>
   <td>{{ rating.toFixed(1) }}</td>
   <td>
-    <button class="small" onclick.stop={() => data(old => old.filter(r => r.id !== id))}>
+    <button
+      class="small"
+      disabled={!!stopStreaming()}
+      onclick.stop={() => data(old => old.filter(r => r.id !== id))}
+    >
       Delete
     </button>
   </td>
