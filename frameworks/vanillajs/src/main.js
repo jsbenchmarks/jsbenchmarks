@@ -169,7 +169,7 @@ function stream(e) {
   for (let i = 0; i < rows.length; i++) {
     nextBody.appendChild(createRow(rows[i]));
   }
-  
+
   table.replaceChild(nextBody, tbody);
   tbody = nextBody;
   setHasRows(true);
@@ -181,17 +181,15 @@ function stream(e) {
     map.set(trs[i]._id, trs[i]);
   }
 
-  stopStreaming = streamUpdates((updates) => {
-    for (const update of updates) {
-      const tr = map.get(update.id);
-      if (tr) {
-        if (update.price) {
-          tr._price.nodeValue = "$" + update.price.toFixed(2);
-        }
-        if (update.availabilityStatus) {
-          tr._availabilityStatus = update.availabilityStatus;
-          tr._s.nodeValue = update.availabilityStatus;
-        }
+  stopStreaming = streamUpdates((update) => {
+    const tr = map.get(update.id);
+    if (tr) {
+      if (update.price) {
+        tr._price.nodeValue = "$" + update.price.toFixed(2);
+      }
+      if (update.availabilityStatus) {
+        tr._availabilityStatus = update.availabilityStatus;
+        tr._s.nodeValue = update.availabilityStatus;
       }
     }
   });

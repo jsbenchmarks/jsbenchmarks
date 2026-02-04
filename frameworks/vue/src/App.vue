@@ -10,9 +10,11 @@
           @click="() => rows = [...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)]">Insert</button>
         <button id="prepend" :disabled="isStreaming" @click="() => rows = [...buildData(1), ...rows]">Prepend</button>
         <button id="append" :disabled="isStreaming" @click="() => rows = [...rows, ...buildData(1)]">Append</button>
-        <button id="sort" :disabled="isStreaming" @click="() => rows = rows.toSorted((a, b) => a.name.localeCompare(b.name))">Sort</button>
+        <button id="sort" :disabled="isStreaming"
+          @click="() => rows = rows.toSorted((a, b) => a.name.localeCompare(b.name))">Sort</button>
         <button id="filter" :disabled="isStreaming" @click="() => rows = rows.filter(d => d.id % 2)">Filter</button>
-        <button id="units" :disabled="isStreaming" @click="() => unitSystem = unitSystem === 'imperial' ? 'metric' : 'imperial'">Units</button>
+        <button id="units" :disabled="isStreaming"
+          @click="() => unitSystem = unitSystem === 'imperial' ? 'metric' : 'imperial'">Units</button>
         <button id="restock" :disabled="isStreaming" @click="() => rows = rows.map(r => r.availabilityStatus === 'Out of Stock'
           ? { ...r, availabilityStatus: 'In Stock' }
           : r)">Restock</button>
@@ -35,9 +37,10 @@
         </tr>
       </thead>
       <tbody>
-        <Row v-for="row in rows" :key="row.id" :row="row" :selected="selected" :isStreaming="isStreaming" :unitSystem="unitSystem"
-          :weightConversion="weightConversion" :lengthConversion="lengthConversion" :powerConversion="powerConversion"
-          @select="!isStreaming && (selected = $event)" @delete="rows = rows.filter(r => r.id !== row.id)" />
+        <Row v-for="row in rows" :key="row.id" :row="row" :selected="selected" :isStreaming="isStreaming"
+          :unitSystem="unitSystem" :weightConversion="weightConversion" :lengthConversion="lengthConversion"
+          :powerConversion="powerConversion" @select="!isStreaming && (selected = $event)"
+          @delete="rows = rows.filter(r => r.id !== row.id)" />
       </tbody>
     </table>
 
@@ -92,18 +95,16 @@ function stream() {
     idMap.set(initialRows[i].id, i);
   }
 
-  stopStreaming = streamUpdates((updates) => {
+  stopStreaming = streamUpdates((update) => {
     const newRows = [...rows.value];
-    for (const update of updates) {
-      const idx = idMap.get(update.id);
-      if (idx !== undefined) {
-        const row = newRows[idx];
-        newRows[idx] = { 
-          ...row, 
-          price: update.price || row.price,
-          availabilityStatus: update.availabilityStatus || row.availabilityStatus
-        };
-      }
+    const idx = idMap.get(update.id);
+    if (idx !== undefined) {
+      const row = newRows[idx];
+      newRows[idx] = {
+        ...row,
+        price: update.price || row.price,
+        availabilityStatus: update.availabilityStatus || row.availabilityStatus
+      };
     }
     rows.value = newRows;
   });
