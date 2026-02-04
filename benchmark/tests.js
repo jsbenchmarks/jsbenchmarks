@@ -15,7 +15,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#create",
-      done: () => document.querySelectorAll("tbody tr").length === 1000,
+      done: j => document.querySelectorAll("tbody tr").length === 1000,
     },
   },
   {
@@ -35,7 +35,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#create",
-      done: () => document.querySelector("tbody tr td").textContent === "7000" && document.querySelectorAll("tbody tr").length === 1000,
+      done: j => { console.log(j); return document.querySelector("tbody tr td").textContent === `${(j + 2) * 1000}` && document.querySelectorAll("tbody tr").length === 1000 },
     },
   },
   {
@@ -52,24 +52,19 @@ export const benchmarks = [
         click: "#reverse",
         done: i => {
           const tds = Array.from(document.querySelectorAll("td:first-child"));
+          // Warmup toggles state: Even i = Descending, Odd i = Ascending
           if (i % 2 === 0) {
             for (let j = 0; j < 1000; j++) {
               const expected = 999 - j;
               const actual = parseInt(tds[j].textContent, 10);
-              if (actual !== expected) {
-                console.log({ expected, actual });
-                return false;
-              }
+              if (actual !== expected) return false;
             }
             return true;
           }
           for (let j = 0; j < 1000; j++) {
             const expected = j;
             const actual = parseInt(tds[j].textContent, 10);
-            if (actual !== expected) {
-                console.log({ expected, actual });
-              return false;
-            }
+            if (actual !== expected) return false;
           }
           return true;
         },
@@ -77,13 +72,18 @@ export const benchmarks = [
     ],
     measure: {
       click: "#reverse",
+      // Fix: Measure ALWAYS happens after a fresh Create. 
+      // So checking #reverse means the result is ALWAYS Descending.
+      // IDs are from the second batch (Setup 1 -> Clear -> Setup 2).
+      // Batch 1: 0-999. Batch 2: 1000-1999. 
+      // Reversed Batch 2: 1999 down to 1000.
       done: () => {
         const tds = document.querySelectorAll("td:first-child");
-        for (let j = 0; j < 1000; j++) {
-          const expected = 1999 - j;
-          const actual = parseInt(tds[j].textContent, 10);
+        for (let k = 0; k < 1000; k++) {
+          const expected = 1999 - k;
+          const actual = parseInt(tds[k].textContent, 10);
           if (actual !== expected) {
-              console.log({ expected, actual });
+            // console.log({ expected, actual });
             return false;
           }
         }
@@ -120,7 +120,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#sort",
-      done: () => {
+      done: j => {
         const names = Array.from(document.querySelectorAll("tr td:nth-of-type(2)")).map(td => td.textContent);
         return names.every((name, i) => {
           if (i === names.length - 1) {
@@ -152,7 +152,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#clear",
-      done: () => document.querySelectorAll("tbody tr").length === 0,
+      done: j => document.querySelectorAll("tbody tr").length === 0,
     },
   },
   {
@@ -176,7 +176,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#filter",
-      done: () => document.querySelectorAll("tbody tr").length === 500,
+      done: j => document.querySelectorAll("tbody tr").length === 500,
     },
   },
   {
@@ -195,8 +195,8 @@ export const benchmarks = [
       },
     ],
     measure: {
-      click: "tbody tr:nth-of-type(10) button:nth-of-type(1)",
-      done: () => document.querySelectorAll("tbody tr").length === 999,
+      click: "tbody tr:nth-of-type(1) button:nth-of-type(1)",
+      done: j => document.querySelectorAll("tbody tr").length === 999,
     },
   },
   {
@@ -236,7 +236,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#prepend",
-      done: () => document.querySelectorAll("tbody tr").length === 1001,
+      done: j => document.querySelectorAll("tbody tr").length === 1001,
     },
   },
   {
@@ -256,7 +256,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#append",
-      done: () => document.querySelectorAll("tbody tr").length === 1001,
+      done: j => document.querySelectorAll("tbody tr").length === 1001,
     },
   },
   {
@@ -276,7 +276,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "tbody tr:nth-of-type(10)",
-      done: "tbody tr:nth-of-type(10).selected",
+      done: j => document.querySelector("tbody tr:nth-of-type(10)").classList.contains("selected"),
     },
   },
   {
@@ -296,7 +296,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#units",
-      done: () => document.querySelector("tbody tr td:nth-of-type(3)").innerText.includes("kg"),
+      done: j => document.querySelector("tbody tr td:nth-of-type(3)").innerText.includes(j % 2 === 0 ? "lbs" : "kg"),
     },
   },
   {
@@ -323,7 +323,7 @@ export const benchmarks = [
     ],
     measure: {
       click: "#restock",
-      done: () => {
+      done: j => {
         const cells = Array.from(document.querySelectorAll("tbody tr td:nth-of-type(7)"));
         return cells.length > 0 && cells.every(td => td.textContent !== "Out of Stock");
       },

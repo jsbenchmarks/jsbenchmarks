@@ -90,7 +90,7 @@ function resolveNth(selector, j) {
 }
 
 // Function for standard benchmarks (trace-based)
-async function executeMeasured(page, measure, framework, benchmarkName, runIndex) {
+async function executeMeasured(page, measure, framework, benchmarkName, runIndex, j) {
   const traceFilename = `${framework}-${benchmarkName}-${runIndex}.json`;
   const tracePath = "trace.json";
   const storagePath = path.join("results", "public", "traces", traceFilename);
@@ -107,19 +107,21 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
     categories: ['devtools.timeline', 'blink.user_timing', 'disabled-by-default-devtools.timeline'],
   });
 
-  // Prepare the condition string to be evaluated in the browser context.
+  // [FIX 1] Fix doneFnString construction to pass function definition, not execution
   const doneFnString = typeof measure.done === "string"
-    ? `document.querySelector("${resolveNth(measure.done)}") !== null`
-    : `(${measure.done.toString()})()`;
+    ? `() => document.querySelector("${resolveNth(measure.done, j)}") !== null`
+    : measure.done.toString();
 
-  const clickSelector = resolveNth(measure.click);
+  const clickSelector = resolveNth(measure.click, j);
 
-  // Execute the benchmark logic entirely inside the browser to minimize IPC latency
-  await page.evaluate(async (selector, doneCondition) => {
+  // [FIX 2] Pass 'j' into the evaluate function arguments
+  await page.evaluate(async (selector, doneCondition, j) => {
     return new Promise((resolve, reject) => {
-      const check = new Function("return " + doneCondition);
+      // [FIX 3] Create the check function correctly (execute the factory to get the function)
+      const check = new Function("return " + doneCondition)();
+      
       const observer = new MutationObserver(() => {
-        if (check()) {
+        if (check(j)) {
           performance.mark("bench-dom-done");
           observer.disconnect();
           resolve();
@@ -142,13 +144,13 @@ async function executeMeasured(page, measure, framework, benchmarkName, runIndex
         return;
       }
 
-      if (check()) {
+      if (check(j)) {
         performance.mark("bench-dom-done");
         observer.disconnect();
         resolve();
       }
     });
-  }, clickSelector, doneFnString);
+  }, clickSelector, doneFnString, j); // <--- Pass j here
 
   // Wait a buffer period to ensure the Paint/Commit event is captured.
   await new Promise(r => setTimeout(r, 200));
@@ -214,6 +216,11 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
     .option("runs", {
       type: "number",
       description: "Number of runs to perform",
+    })
+    .option("duration", {
+      type: "number",
+      alias: "d",
+      description: "Duration of load test",
     })
     .option("skip-build", {
       type: "boolean",
@@ -381,7 +388,7 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
         if (runIndex >= runsForBenchmark) continue;
 
         for (const entry of [...frameworkEntries]) {
-          const { fw, uri, result } = entry;
+          const { fw, uri } = entry;
           let failed = false;
           let page;
           try {
@@ -392,7 +399,8 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
             await page.bringToFront();
             await page.waitForSelector("main");
             await execute(page, benchmark.setup);
-            for (let j = 0; j < 5; j++) {
+            const targetJ = 2 + (runIndex % 4);
+            for (let j = 0; j < targetJ; j++) {
               await execute(page, benchmark.warmup, j);
             }
             await page.click("#clear");
@@ -401,7 +409,7 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
             await execute(page, benchmark.setup);
             await page.evaluate(() => window.gc());
             await new Promise(r => setTimeout(r, 100));
-            const traceFilename = await executeMeasured(page, benchmark.measure, fw, benchmark.name, runIndex);
+            const traceFilename = await executeMeasured(page, benchmark.measure, fw, benchmark.name, runIndex, targetJ);
             
             await page.evaluate(() => window.gc());
             await new Promise(r => setTimeout(r, 10));
@@ -446,7 +454,7 @@ async function executeLoad(page, measure, framework, benchmarkName, runIndex) {
 
   if (runStream) {
     // Click Stream to start the streaming, then sample average memory/cpu.
-    const streamDurationMs = 60_000;
+    const streamDurationMs = (argv.duration || 60) * 1000;
     const streamRuns = 1;
 
     for (let runIndex = 0; runIndex < streamRuns; runIndex++) {
