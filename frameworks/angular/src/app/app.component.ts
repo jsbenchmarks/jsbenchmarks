@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { buildData } from 'common/data';
 import { streamUpdates } from 'common/streaming';
 import { RowComponent } from './row.component';
@@ -97,19 +97,17 @@ export class AppComponent {
       idMap.set(initialRows[i].id, i);
     }
 
-    this.stopStreaming = streamUpdates((updates: any[]) => {
+    this.stopStreaming = streamUpdates((update: any) => {
       this.rows.update(currentRows => {
         const newRows = [...currentRows];
-        for (const update of updates) {
-          const idx = idMap.get(update.id);
-          if (idx !== undefined) {
-            const row = newRows[idx];
-            newRows[idx] = { 
-              ...row, 
-              price: update.price || row.price,
-              availabilityStatus: update.availabilityStatus || row.availabilityStatus
-            };
-          }
+        const idx = idMap.get(update.id);
+        if (idx !== undefined) {
+          const row = newRows[idx];
+          newRows[idx] = {
+            ...row,
+            price: update.price || row.price,
+            availabilityStatus: update.availabilityStatus || row.availabilityStatus
+          };
         }
         return newRows;
       });

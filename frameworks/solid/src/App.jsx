@@ -49,13 +49,11 @@ function App() {
       idMap.set(row.id, row);
     }
 
-    stopStreaming = streamUpdates((updates) => {
-        for (const update of updates) {
-            const row = idMap.get(update.id);
-            if (row) {
-                if (update.price) row.price[1](update.price);
-                if (update.availabilityStatus) row.availabilityStatus[1](update.availabilityStatus);
-            }
+    stopStreaming = streamUpdates((update) => {
+        const row = idMap.get(update.id);
+        if (row) {
+            if (update.price) row.price[1](update.price);
+            if (update.availabilityStatus) row.availabilityStatus[1](update.availabilityStatus);
         }
     });
   };

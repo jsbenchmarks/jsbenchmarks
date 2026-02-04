@@ -47,18 +47,16 @@ export function App() {
       idMap.set(initialRows[i].id, i);
     }
 
-    stopStreaming = streamUpdates((updates) => {
+    stopStreaming = streamUpdates((update) => {
       const newRows = [...rows.value];
-      for (const update of updates) {
-        const idx = idMap.get(update.id);
-        if (idx !== undefined) {
-          const row = newRows[idx];
-          newRows[idx] = { 
-            ...row, 
-            price: update.price || row.price,
-            availabilityStatus: update.availabilityStatus || row.availabilityStatus
-          };
-        }
+      const idx = idMap.get(update.id);
+      if (idx !== undefined) {
+        const row = newRows[idx];
+        newRows[idx] = { 
+          ...row, 
+          price: update.price || row.price,
+          availabilityStatus: update.availabilityStatus || row.availabilityStatus
+        };
       }
       rows.value = newRows;
     });

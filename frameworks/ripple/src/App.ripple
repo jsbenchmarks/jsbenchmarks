@@ -56,13 +56,11 @@ export component App() {
             idMap.set(row.id, row);
           }
 
-          stopStreaming = streamUpdates((updates) => {
-            for (const update of updates) {
-              const row = idMap.get(update.id);
-              if (row) {
-                if (update.price) row.@price = update.price;
-                if (update.availabilityStatus) row.@availabilityStatus = update.availabilityStatus;
-              }
+          stopStreaming = streamUpdates((update) => {
+            const row = idMap.get(update.id);
+            if (row) {
+              if (update.price) row.@price = update.price;
+              if (update.availabilityStatus) row.@availabilityStatus = update.availabilityStatus;
             }
           });
         }}>{@isStreaming ? 'Stop' : 'Stream'}</button>

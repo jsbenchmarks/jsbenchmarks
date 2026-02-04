@@ -1,6 +1,6 @@
 import { buildData } from 'common/data';
 import { streamUpdates } from 'common/streaming';
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Row from './Row';
 
 export default function App() {
@@ -35,20 +35,17 @@ export default function App() {
       idMap.set(initialRows[i].id, i);
     }
 
-    stopStreaming.current = streamUpdates((updates) => {
-      const updatesClone = [...updates];
+    stopStreaming.current = streamUpdates((update) => {
       setRows(currentRows => {
         const newRows = [...currentRows];
-        for (const update of updatesClone) {
-          const idx = idMap.get(update.id);
-          if (idx !== undefined) {
-            const row = newRows[idx];
-            newRows[idx] = { 
-              ...row, 
-              price: update.price || row.price,
-              availabilityStatus: update.availabilityStatus || row.availabilityStatus
-            };
-          }
+        const idx = idMap.get(update.id);
+        if (idx !== undefined) {
+          const row = newRows[idx];
+          newRows[idx] = { 
+            ...row, 
+            price: update.price || row.price,
+            availabilityStatus: update.availabilityStatus || row.availabilityStatus
+          };
         }
         return newRows;
       });

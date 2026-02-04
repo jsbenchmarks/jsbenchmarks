@@ -2,7 +2,6 @@ import { currentId, randomAvailability } from './data';
 
 export function streamUpdates(callback) {
   let intervalId;
-  const updates = [];
   function emit() {
     for (let i = 0; i < 10; i++) {
         const id = Math.floor(Math.random() * 25) + currentId - 25;
@@ -16,11 +15,8 @@ export function streamUpdates(callback) {
             update.price = Math.random() * 1000 + 50;
             update.availabilityStatus = randomAvailability();
         }
-        
-        updates.push(update);
+        callback(update);
     }
-    callback(updates);
-    updates.length = 0;
   }
   intervalId = setInterval(emit, 10);
   return () => clearInterval(intervalId);

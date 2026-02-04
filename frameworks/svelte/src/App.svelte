@@ -34,18 +34,17 @@
       idMap.set(initialRows[i].id, i);
     }
 
-    stopStreaming = streamUpdates((updates) => {
+    stopStreaming = streamUpdates((update) => {
       const newRows = [...rows];
-      for (const update of updates) {
-        const idx = idMap.get(update.id);
-        if (idx !== undefined) {
-          const row = newRows[idx];
-          newRows[idx] = { 
-            ...row, 
-            price: update.price || row.price,
-            availabilityStatus: update.availabilityStatus || row.availabilityStatus
-          };
-        }
+      const idx = idMap.get(update.id);
+      if (idx !== undefined) {
+        const row = newRows[idx];
+        newRows[idx] = {
+          ...row,
+          price: update.price || row.price,
+          availabilityStatus:
+            update.availabilityStatus || row.availabilityStatus,
+        };
       }
       rows = newRows;
     });
@@ -69,13 +68,16 @@
   <div class="header">
     <h1>Svelte</h1>
     <div class="actions">
-      <button id="create" disabled={isStreaming} onclick={create}
-        >Create</button
+      <button id="create" disabled={isStreaming} onclick={create}>Create</button
       >
       <button id="stream" onclick={stream}
-        >{isStreaming ? 'Stop' : 'Stream'}</button
+        >{isStreaming ? "Stop" : "Stream"}</button
       >
-      <button id="reverse" disabled={isStreaming} onclick={() => (rows = rows.toReversed())}>Reverse</button>
+      <button
+        id="reverse"
+        disabled={isStreaming}
+        onclick={() => (rows = rows.toReversed())}>Reverse</button
+      >
       <button
         id="insert"
         disabled={isStreaming}
@@ -83,11 +85,15 @@
           (rows = [...rows.slice(0, 10), ...buildData(1), ...rows.slice(10)])}
         >Insert</button
       >
-      <button id="prepend" disabled={isStreaming} onclick={() => (rows = [...buildData(1), ...rows])}
-        >Prepend</button
+      <button
+        id="prepend"
+        disabled={isStreaming}
+        onclick={() => (rows = [...buildData(1), ...rows])}>Prepend</button
       >
-      <button id="append" disabled={isStreaming} onclick={() => (rows = [...rows, ...buildData(1)])}
-        >Append</button
+      <button
+        id="append"
+        disabled={isStreaming}
+        onclick={() => (rows = [...rows, ...buildData(1)])}>Append</button
       >
       <button
         id="sort"
@@ -96,15 +102,17 @@
           (rows = rows.toSorted((a, b) => a.name.localeCompare(b.name)))}
         >Sort</button
       >
-      <button id="filter" disabled={isStreaming} onclick={() => (rows = rows.filter((d) => d.id % 2))}
-        >Filter</button
+      <button
+        id="filter"
+        disabled={isStreaming}
+        onclick={() => (rows = rows.filter((d) => d.id % 2))}>Filter</button
       >
       <button
         id="units"
         disabled={isStreaming}
         onclick={() =>
           (unitSystem.value =
-            unitSystem.value === 'imperial' ? 'metric' : 'imperial')}
+            unitSystem.value === "imperial" ? "metric" : "imperial")}
         >Units</button
       >
       <button
@@ -112,9 +120,9 @@
         disabled={isStreaming}
         onclick={() =>
           (rows = rows.map((r) =>
-            r.availabilityStatus === 'Out of Stock'
-              ? { ...r, availabilityStatus: 'In Stock' }
-              : r
+            r.availabilityStatus === "Out of Stock"
+              ? { ...r, availabilityStatus: "In Stock" }
+              : r,
           ))}>Restock</button
       >
       <button id="clear" disabled={isStreaming} onclick={clear}>Clear</button>
