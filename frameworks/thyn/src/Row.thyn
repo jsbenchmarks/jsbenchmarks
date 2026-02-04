@@ -56,7 +56,7 @@
   <td>
     <button
       class="small"
-      disabled={!!stopStreaming()}
+      disabled={stopStreaming()}
       onclick.stop={() => data(old => old.filter(r => r.id !== id))}
     >
       Delete
