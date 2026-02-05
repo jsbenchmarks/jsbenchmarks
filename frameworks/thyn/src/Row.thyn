@@ -35,20 +35,13 @@
   <td>{{ id }}</td>
   <td>{{ name }}</td>
   <td>
-    {{ (weight * weightConversion()).toFixed(1) }}
-    {{ weightUnits() }}
+    {{ (weight * weightConversion()).toFixed(1) }} {{ weightUnits() }}
   </td>
   <td>
-    {{ (height * lengthConversion()).toFixed(1) }}
-    x
-    {{ (width * lengthConversion()).toFixed(1) }}
-    x
-    {{ (depth * lengthConversion()).toFixed(1) }}
-    {{ lengthUnits() }}
+    {{ (height * lengthConversion()).toFixed(1) }} x {{ (width * lengthConversion()).toFixed(1) }} x {{ (depth * lengthConversion()).toFixed(1) }} {{ lengthUnits() }}
   </td>
   <td>
-    {{ (powerConsumption * powerConversion()).toFixed(1) }}
-    {{ powerUnits() }}
+    {{ (powerConsumption * powerConversion()).toFixed(1) }} {{ powerUnits() }}
   </td>
   <td>${{ price().toFixed(2) }}</td>
   <td>{{ availabilityStatus() }}</td>
