@@ -191,7 +191,7 @@ export function Home() {
         <h1 className="App-h1">JS Benchmarks Results</h1>
         <div className="App-header-info">
           <p className="App-p">
-            <strong>System:</strong> Linux / Chrome 144
+            <strong>System:</strong> Linux / Chrome 145
           </p>
           <p className="App-p">
             <strong>Repository:</strong> <a className="App-link" href="https://github.com/jsbenchmarks/jsbenchmarks">https://github.com/jsbenchmarks/jsbenchmarks</a>
