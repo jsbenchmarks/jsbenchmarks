@@ -1,0 +1,23 @@
+{
+  "name": "nord",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12"
+  },
+  "dependencies": {
+    "@grainular/nord": "2.0.0",
+    "@grainular/grains": "2.0.0"
+  },
+  "jsbenchmarks": {
+    "website": "https://www.nordjs.dev",
+    "package": "@grainular/nord"
+  }
+}
