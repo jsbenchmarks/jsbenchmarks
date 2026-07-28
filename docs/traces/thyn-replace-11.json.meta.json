@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "replace",
+  "runIndex": 11,
+  "memory": 2929856,
+  "traceFile": "thyn-replace-11.json",
+  "duration": 127.187
+}

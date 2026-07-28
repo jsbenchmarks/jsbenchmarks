@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "sort",
+  "runIndex": 15,
+  "memory": 2901888,
+  "traceFile": "thyn-sort-15.json",
+  "duration": 123.662
+}

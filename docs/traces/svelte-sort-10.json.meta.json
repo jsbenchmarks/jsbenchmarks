@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "sort",
+  "runIndex": 10,
+  "memory": 5545888,
+  "traceFile": "svelte-sort-10.json",
+  "duration": 112.874
+}

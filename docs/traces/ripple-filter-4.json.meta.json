@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "filter",
+  "runIndex": 4,
+  "memory": 4867928,
+  "traceFile": "ripple-filter-4.json",
+  "duration": 35.902
+}

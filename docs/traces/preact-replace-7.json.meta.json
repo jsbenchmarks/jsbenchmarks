@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "replace",
+  "runIndex": 7,
+  "memory": 6191920,
+  "traceFile": "preact-replace-7.json",
+  "duration": 146.079
+}

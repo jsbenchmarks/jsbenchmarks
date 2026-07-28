@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "clear",
+  "runIndex": 0,
+  "memory": 3352624,
+  "traceFile": "preact-clear-0.json",
+  "duration": 14.031
+}

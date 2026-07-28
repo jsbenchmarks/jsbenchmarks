@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "prepend",
+  "runIndex": 1,
+  "memory": 6837656,
+  "traceFile": "solid-prepend-1.json",
+  "duration": 21.75
+}

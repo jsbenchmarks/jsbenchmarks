@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "delete",
+  "runIndex": 6,
+  "memory": 2918044,
+  "traceFile": "thyn-delete-6.json",
+  "duration": 51.709
+}

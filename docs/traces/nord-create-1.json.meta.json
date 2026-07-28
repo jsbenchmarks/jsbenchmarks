@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "create",
+  "runIndex": 1,
+  "memory": 6300356,
+  "traceFile": "nord-create-1.json",
+  "duration": 151.461
+}

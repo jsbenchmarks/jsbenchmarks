@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "delete",
+  "runIndex": 9,
+  "memory": 6768436,
+  "traceFile": "preact-delete-9.json",
+  "duration": 37.527
+}

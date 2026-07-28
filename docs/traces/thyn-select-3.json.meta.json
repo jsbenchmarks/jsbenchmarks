@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "select",
+  "runIndex": 3,
+  "memory": 2932992,
+  "traceFile": "thyn-select-3.json",
+  "duration": 3.302
+}

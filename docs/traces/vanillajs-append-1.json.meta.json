@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "append",
+  "runIndex": 1,
+  "memory": 1715800,
+  "traceFile": "vanillajs-append-1.json",
+  "duration": 9.533
+}

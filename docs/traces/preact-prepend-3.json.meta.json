@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "prepend",
+  "runIndex": 3,
+  "memory": 7093772,
+  "traceFile": "preact-prepend-3.json",
+  "duration": 25.504
+}

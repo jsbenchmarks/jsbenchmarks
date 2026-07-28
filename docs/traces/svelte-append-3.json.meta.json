@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "append",
+  "runIndex": 3,
+  "memory": 5376428,
+  "traceFile": "svelte-append-3.json",
+  "duration": 9.796
+}

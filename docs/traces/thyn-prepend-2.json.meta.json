@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "prepend",
+  "runIndex": 2,
+  "memory": 2920604,
+  "traceFile": "thyn-prepend-2.json",
+  "duration": 16.202
+}

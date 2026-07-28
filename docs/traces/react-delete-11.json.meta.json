@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "delete",
+  "runIndex": 11,
+  "memory": 11404404,
+  "traceFile": "react-delete-11.json",
+  "duration": 55.76
+}

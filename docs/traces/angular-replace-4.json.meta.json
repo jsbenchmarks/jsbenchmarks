@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "replace",
+  "runIndex": 4,
+  "memory": 7642624,
+  "traceFile": "angular-replace-4.json",
+  "duration": 137.097
+}

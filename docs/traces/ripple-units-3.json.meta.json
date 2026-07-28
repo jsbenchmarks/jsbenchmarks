@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "units",
+  "runIndex": 3,
+  "memory": 3524560,
+  "traceFile": "ripple-units-3.json",
+  "duration": 81.259
+}

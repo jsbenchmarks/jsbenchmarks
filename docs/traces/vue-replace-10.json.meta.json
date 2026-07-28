@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "replace",
+  "runIndex": 10,
+  "memory": 10785144,
+  "traceFile": "vue-replace-10.json",
+  "duration": 122.793
+}

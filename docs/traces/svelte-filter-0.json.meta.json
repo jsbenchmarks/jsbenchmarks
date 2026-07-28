@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "filter",
+  "runIndex": 0,
+  "memory": 3537512,
+  "traceFile": "svelte-filter-0.json",
+  "duration": 46.725
+}

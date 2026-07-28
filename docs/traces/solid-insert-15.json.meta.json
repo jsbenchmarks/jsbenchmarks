@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "insert",
+  "runIndex": 15,
+  "memory": 6842140,
+  "traceFile": "solid-insert-15.json",
+  "duration": 23.569
+}

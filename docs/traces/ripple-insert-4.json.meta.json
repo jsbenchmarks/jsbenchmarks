@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "insert",
+  "runIndex": 4,
+  "memory": 3701000,
+  "traceFile": "ripple-insert-4.json",
+  "duration": 15.587
+}

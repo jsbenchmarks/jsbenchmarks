@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "insert",
+  "runIndex": 4,
+  "memory": 2917696,
+  "traceFile": "thyn-insert-4.json",
+  "duration": 15.74
+}

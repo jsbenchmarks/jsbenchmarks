@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "delete",
+  "runIndex": 14,
+  "memory": 6543936,
+  "traceFile": "svelte-delete-14.json",
+  "duration": 38.431
+}

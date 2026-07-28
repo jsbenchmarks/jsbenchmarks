@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "create",
+  "runIndex": 7,
+  "memory": 1848264,
+  "traceFile": "vanillajs-create-7.json",
+  "duration": 108.687
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "sort",
+  "runIndex": 0,
+  "memory": 15372216,
+  "traceFile": "react-sort-0.json",
+  "duration": 145.561
+}

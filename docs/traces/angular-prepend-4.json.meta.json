@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "prepend",
+  "runIndex": 4,
+  "memory": 8058452,
+  "traceFile": "angular-prepend-4.json",
+  "duration": 16.912
+}

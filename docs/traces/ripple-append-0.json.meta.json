@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "append",
+  "runIndex": 0,
+  "memory": 3707380,
+  "traceFile": "ripple-append-0.json",
+  "duration": 10.111
+}

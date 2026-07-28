@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "restock",
+  "runIndex": 0,
+  "memory": 3692420,
+  "traceFile": "ripple-restock-0.json",
+  "duration": 16.99
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "replace",
+  "runIndex": 6,
+  "memory": 11736900,
+  "traceFile": "react-replace-6.json",
+  "duration": 144.91
+}

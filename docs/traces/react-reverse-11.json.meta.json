@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "reverse",
+  "runIndex": 11,
+  "memory": 15376240,
+  "traceFile": "react-reverse-11.json",
+  "duration": 149.949
+}

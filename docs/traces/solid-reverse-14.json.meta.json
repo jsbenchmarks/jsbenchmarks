@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "reverse",
+  "runIndex": 14,
+  "memory": 5723308,
+  "traceFile": "solid-reverse-14.json",
+  "duration": 133.142
+}

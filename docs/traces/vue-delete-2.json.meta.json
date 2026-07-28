@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "delete",
+  "runIndex": 2,
+  "memory": 10585216,
+  "traceFile": "vue-delete-2.json",
+  "duration": 40.966
+}

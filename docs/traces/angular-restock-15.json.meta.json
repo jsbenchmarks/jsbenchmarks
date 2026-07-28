@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "restock",
+  "runIndex": 15,
+  "memory": 7635784,
+  "traceFile": "angular-restock-15.json",
+  "duration": 17.453
+}

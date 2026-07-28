@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "insert",
+  "runIndex": 3,
+  "memory": 1718388,
+  "traceFile": "vanillajs-insert-3.json",
+  "duration": 15.968
+}

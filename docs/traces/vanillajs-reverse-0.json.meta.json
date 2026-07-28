@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "reverse",
+  "runIndex": 0,
+  "memory": 1736840,
+  "traceFile": "vanillajs-reverse-0.json",
+  "duration": 123.204
+}

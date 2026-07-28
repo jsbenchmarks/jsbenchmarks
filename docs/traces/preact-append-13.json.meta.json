@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "append",
+  "runIndex": 13,
+  "memory": 7066232,
+  "traceFile": "preact-append-13.json",
+  "duration": 15.361
+}

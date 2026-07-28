@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "prepend",
+  "runIndex": 9,
+  "memory": 11374472,
+  "traceFile": "react-prepend-9.json",
+  "duration": 29.856
+}

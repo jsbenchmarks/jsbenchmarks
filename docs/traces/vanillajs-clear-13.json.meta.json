@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "clear",
+  "runIndex": 13,
+  "memory": 1104684,
+  "traceFile": "vanillajs-clear-13.json",
+  "duration": 8.058
+}

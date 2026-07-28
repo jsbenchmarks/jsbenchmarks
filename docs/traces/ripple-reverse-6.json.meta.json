@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "reverse",
+  "runIndex": 6,
+  "memory": 5868272,
+  "traceFile": "ripple-reverse-6.json",
+  "duration": 113.976
+}

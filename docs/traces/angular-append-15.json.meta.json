@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "append",
+  "runIndex": 15,
+  "memory": 8107556,
+  "traceFile": "angular-append-15.json",
+  "duration": 11.741
+}

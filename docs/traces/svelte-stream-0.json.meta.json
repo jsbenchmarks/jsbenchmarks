@@ -1,0 +1,7 @@
+{
+  "framework": "svelte",
+  "benchmark": "stream",
+  "runIndex": 0,
+  "memory": 1838097.3333333333,
+  "cpu": 13.114743333333331
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "units",
+  "runIndex": 15,
+  "memory": 15414904,
+  "traceFile": "react-units-15.json",
+  "duration": 108.72
+}

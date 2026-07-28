@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "prepend",
+  "runIndex": 9,
+  "memory": 6519228,
+  "traceFile": "nord-prepend-9.json",
+  "duration": 20.549
+}

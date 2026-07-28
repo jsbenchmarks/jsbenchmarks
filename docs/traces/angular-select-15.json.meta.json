@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "select",
+  "runIndex": 15,
+  "memory": 8080688,
+  "traceFile": "angular-select-15.json",
+  "duration": 3.894
+}

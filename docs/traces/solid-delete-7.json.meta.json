@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "delete",
+  "runIndex": 7,
+  "memory": 6564524,
+  "traceFile": "solid-delete-7.json",
+  "duration": 46.616
+}

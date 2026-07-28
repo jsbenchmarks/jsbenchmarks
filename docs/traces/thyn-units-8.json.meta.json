@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "units",
+  "runIndex": 8,
+  "memory": 2837752,
+  "traceFile": "thyn-units-8.json",
+  "duration": 81.443
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "replace",
+  "runIndex": 14,
+  "memory": 5622032,
+  "traceFile": "svelte-replace-14.json",
+  "duration": 121.712
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "reverse",
+  "runIndex": 5,
+  "memory": 8103744,
+  "traceFile": "angular-reverse-5.json",
+  "duration": 121.238
+}

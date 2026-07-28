@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "filter",
+  "runIndex": 10,
+  "memory": 3824076,
+  "traceFile": "preact-filter-10.json",
+  "duration": 42.547
+}

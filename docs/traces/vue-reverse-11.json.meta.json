@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "reverse",
+  "runIndex": 11,
+  "memory": 10643108,
+  "traceFile": "vue-reverse-11.json",
+  "duration": 113.645
+}

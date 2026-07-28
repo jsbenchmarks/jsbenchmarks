@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "prepend",
+  "runIndex": 0,
+  "memory": 3705296,
+  "traceFile": "ripple-prepend-0.json",
+  "duration": 17.173
+}

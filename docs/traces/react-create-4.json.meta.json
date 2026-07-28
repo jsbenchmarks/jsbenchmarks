@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "create",
+  "runIndex": 4,
+  "memory": 11180252,
+  "traceFile": "react-create-4.json",
+  "duration": 150.309
+}

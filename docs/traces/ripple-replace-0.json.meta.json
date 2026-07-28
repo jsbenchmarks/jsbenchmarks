@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "replace",
+  "runIndex": 0,
+  "memory": 6049852,
+  "traceFile": "ripple-replace-0.json",
+  "duration": 125.733
+}

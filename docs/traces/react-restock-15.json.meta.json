@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "restock",
+  "runIndex": 15,
+  "memory": 11511296,
+  "traceFile": "react-restock-15.json",
+  "duration": 27.928
+}

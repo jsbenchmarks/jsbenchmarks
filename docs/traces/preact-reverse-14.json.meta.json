@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "reverse",
+  "runIndex": 14,
+  "memory": 6145908,
+  "traceFile": "preact-reverse-14.json",
+  "duration": 138.616
+}

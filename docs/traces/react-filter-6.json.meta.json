@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "filter",
+  "runIndex": 6,
+  "memory": 7007480,
+  "traceFile": "react-filter-6.json",
+  "duration": 52.291
+}

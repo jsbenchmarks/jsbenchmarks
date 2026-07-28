@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "filter",
+  "runIndex": 6,
+  "memory": 5475380,
+  "traceFile": "angular-filter-6.json",
+  "duration": 42.775
+}

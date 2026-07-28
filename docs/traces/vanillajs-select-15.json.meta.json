@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "select",
+  "runIndex": 15,
+  "memory": 1719728,
+  "traceFile": "vanillajs-select-15.json",
+  "duration": 2.047
+}

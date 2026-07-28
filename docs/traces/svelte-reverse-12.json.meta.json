@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "reverse",
+  "runIndex": 12,
+  "memory": 5448980,
+  "traceFile": "svelte-reverse-12.json",
+  "duration": 131.788
+}

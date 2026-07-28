@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "restock",
+  "runIndex": 15,
+  "memory": 6427428,
+  "traceFile": "nord-restock-15.json",
+  "duration": 15.522
+}

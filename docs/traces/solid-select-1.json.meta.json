@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "select",
+  "runIndex": 1,
+  "memory": 6572036,
+  "traceFile": "solid-select-1.json",
+  "duration": 2.609
+}

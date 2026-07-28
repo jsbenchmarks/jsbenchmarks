@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "select",
+  "runIndex": 5,
+  "memory": 5662496,
+  "traceFile": "ripple-select-5.json",
+  "duration": 3.118
+}

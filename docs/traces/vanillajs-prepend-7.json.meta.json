@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "prepend",
+  "runIndex": 7,
+  "memory": 1718164,
+  "traceFile": "vanillajs-prepend-7.json",
+  "duration": 15.182
+}

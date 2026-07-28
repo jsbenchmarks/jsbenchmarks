@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "create",
+  "runIndex": 9,
+  "memory": 6674368,
+  "traceFile": "svelte-create-9.json",
+  "duration": 116.956
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "sort",
+  "runIndex": 13,
+  "memory": 7577168,
+  "traceFile": "angular-sort-13.json",
+  "duration": 112.848
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "delete",
+  "runIndex": 6,
+  "memory": 6304316,
+  "traceFile": "nord-delete-6.json",
+  "duration": 35.706
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "replace",
+  "runIndex": 5,
+  "memory": 5762620,
+  "traceFile": "solid-replace-5.json",
+  "duration": 144.944
+}

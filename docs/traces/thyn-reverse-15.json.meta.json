@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "reverse",
+  "runIndex": 15,
+  "memory": 2864664,
+  "traceFile": "thyn-reverse-15.json",
+  "duration": 119.421
+}

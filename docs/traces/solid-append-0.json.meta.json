@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "append",
+  "runIndex": 0,
+  "memory": 6649232,
+  "traceFile": "solid-append-0.json",
+  "duration": 13.983
+}

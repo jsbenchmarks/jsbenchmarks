@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "select",
+  "runIndex": 4,
+  "memory": 6470556,
+  "traceFile": "nord-select-4.json",
+  "duration": 3.772
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "insert",
+  "runIndex": 13,
+  "memory": 6523168,
+  "traceFile": "nord-insert-13.json",
+  "duration": 19.683
+}

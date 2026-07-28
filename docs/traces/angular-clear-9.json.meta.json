@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "clear",
+  "runIndex": 9,
+  "memory": 3796052,
+  "traceFile": "angular-clear-9.json",
+  "duration": 12.904
+}

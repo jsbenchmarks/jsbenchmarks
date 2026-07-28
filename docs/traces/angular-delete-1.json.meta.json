@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "delete",
+  "runIndex": 1,
+  "memory": 8052420,
+  "traceFile": "angular-delete-1.json",
+  "duration": 38.829
+}

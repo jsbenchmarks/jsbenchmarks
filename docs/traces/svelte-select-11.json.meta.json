@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "select",
+  "runIndex": 11,
+  "memory": 6382832,
+  "traceFile": "svelte-select-11.json",
+  "duration": 4.139
+}

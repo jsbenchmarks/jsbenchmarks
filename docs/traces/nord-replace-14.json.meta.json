@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "replace",
+  "runIndex": 14,
+  "memory": 7132828,
+  "traceFile": "nord-replace-14.json",
+  "duration": 164.683
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "insert",
+  "runIndex": 0,
+  "memory": 5358884,
+  "traceFile": "svelte-insert-0.json",
+  "duration": 16.662
+}

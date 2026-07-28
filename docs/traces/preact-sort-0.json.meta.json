@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "sort",
+  "runIndex": 0,
+  "memory": 6153896,
+  "traceFile": "preact-sort-0.json",
+  "duration": 141.234
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "units",
+  "runIndex": 12,
+  "memory": 6440968,
+  "traceFile": "nord-units-12.json",
+  "duration": 81.685
+}

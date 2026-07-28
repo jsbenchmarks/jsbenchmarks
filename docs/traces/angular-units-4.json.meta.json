@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "units",
+  "runIndex": 4,
+  "memory": 7494368,
+  "traceFile": "angular-units-4.json",
+  "duration": 82.071
+}

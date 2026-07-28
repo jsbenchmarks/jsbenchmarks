@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "create",
+  "runIndex": 15,
+  "memory": 6186512,
+  "traceFile": "preact-create-15.json",
+  "duration": 143.265
+}

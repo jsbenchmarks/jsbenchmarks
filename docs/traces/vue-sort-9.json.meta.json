@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "sort",
+  "runIndex": 9,
+  "memory": 6773304,
+  "traceFile": "vue-sort-9.json",
+  "duration": 105.566
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "prepend",
+  "runIndex": 3,
+  "memory": 10667152,
+  "traceFile": "vue-prepend-3.json",
+  "duration": 20.1
+}

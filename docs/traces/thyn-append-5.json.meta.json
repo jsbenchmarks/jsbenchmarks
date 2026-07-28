@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "append",
+  "runIndex": 5,
+  "memory": 2919892,
+  "traceFile": "thyn-append-5.json",
+  "duration": 9.652
+}

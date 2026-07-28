@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "create",
+  "runIndex": 7,
+  "memory": 6769988,
+  "traceFile": "vue-create-7.json",
+  "duration": 120.014
+}

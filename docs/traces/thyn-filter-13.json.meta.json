@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "filter",
+  "runIndex": 13,
+  "memory": 2108228,
+  "traceFile": "thyn-filter-13.json",
+  "duration": 39.856
+}

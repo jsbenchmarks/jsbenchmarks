@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "restock",
+  "runIndex": 2,
+  "memory": 1851608,
+  "traceFile": "vanillajs-restock-2.json",
+  "duration": 17.371
+}

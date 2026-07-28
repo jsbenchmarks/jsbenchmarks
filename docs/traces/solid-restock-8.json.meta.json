@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "restock",
+  "runIndex": 8,
+  "memory": 5713828,
+  "traceFile": "solid-restock-8.json",
+  "duration": 17.025
+}

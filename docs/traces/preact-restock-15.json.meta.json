@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "restock",
+  "runIndex": 15,
+  "memory": 6214120,
+  "traceFile": "preact-restock-15.json",
+  "duration": 22.23
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "append",
+  "runIndex": 1,
+  "memory": 6405052,
+  "traceFile": "nord-append-1.json",
+  "duration": 13.198
+}

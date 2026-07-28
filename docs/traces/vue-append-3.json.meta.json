@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "append",
+  "runIndex": 3,
+  "memory": 10661376,
+  "traceFile": "vue-append-3.json",
+  "duration": 13.14
+}

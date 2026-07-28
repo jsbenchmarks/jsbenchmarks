@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "restock",
+  "runIndex": 15,
+  "memory": 10865216,
+  "traceFile": "vue-restock-15.json",
+  "duration": 19.857
+}

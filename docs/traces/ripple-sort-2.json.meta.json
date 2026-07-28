@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "sort",
+  "runIndex": 2,
+  "memory": 6048772,
+  "traceFile": "ripple-sort-2.json",
+  "duration": 108.597
+}

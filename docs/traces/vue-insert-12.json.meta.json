@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "insert",
+  "runIndex": 12,
+  "memory": 10614260,
+  "traceFile": "vue-insert-12.json",
+  "duration": 17.321
+}

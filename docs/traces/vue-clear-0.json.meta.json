@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "clear",
+  "runIndex": 0,
+  "memory": 6001256,
+  "traceFile": "vue-clear-0.json",
+  "duration": 9.071
+}

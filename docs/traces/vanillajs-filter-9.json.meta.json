@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "filter",
+  "runIndex": 9,
+  "memory": 1766932,
+  "traceFile": "vanillajs-filter-9.json",
+  "duration": 40.19
+}

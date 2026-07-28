@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "append",
+  "runIndex": 4,
+  "memory": 15323840,
+  "traceFile": "react-append-4.json",
+  "duration": 21.357
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "insert",
+  "runIndex": 4,
+  "memory": 15335624,
+  "traceFile": "react-insert-4.json",
+  "duration": 30.827
+}

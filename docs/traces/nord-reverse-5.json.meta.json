@@ -1,0 +1,8 @@
+{
+  "framework": "nord",
+  "benchmark": "reverse",
+  "runIndex": 5,
+  "memory": 6509012,
+  "traceFile": "nord-reverse-5.json",
+  "duration": 129.587
+}

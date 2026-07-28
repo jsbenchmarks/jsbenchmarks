@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "select",
+  "runIndex": 6,
+  "memory": 10494620,
+  "traceFile": "preact-select-6.json",
+  "duration": 8.779
+}

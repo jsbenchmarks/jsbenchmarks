@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "insert",
+  "runIndex": 10,
+  "memory": 7092336,
+  "traceFile": "preact-insert-10.json",
+  "duration": 26.892
+}

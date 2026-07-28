@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "clear",
+  "runIndex": 12,
+  "memory": 10230124,
+  "traceFile": "react-clear-12.json",
+  "duration": 16.519
+}

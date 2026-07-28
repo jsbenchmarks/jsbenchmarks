@@ -1,0 +1,8 @@
+{
+  "framework": "react",
+  "benchmark": "select",
+  "runIndex": 2,
+  "memory": 15350780,
+  "traceFile": "react-select-2.json",
+  "duration": 13.156
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "preact",
+  "benchmark": "units",
+  "runIndex": 8,
+  "memory": 10494628,
+  "traceFile": "preact-units-8.json",
+  "duration": 102.411
+}

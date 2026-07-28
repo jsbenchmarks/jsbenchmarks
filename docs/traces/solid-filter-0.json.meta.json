@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "filter",
+  "runIndex": 0,
+  "memory": 3864228,
+  "traceFile": "solid-filter-0.json",
+  "duration": 56.292
+}

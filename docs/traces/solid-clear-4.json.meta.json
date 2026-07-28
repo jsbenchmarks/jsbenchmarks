@@ -1,0 +1,8 @@
+{
+  "framework": "solid",
+  "benchmark": "clear",
+  "runIndex": 4,
+  "memory": 2542248,
+  "traceFile": "solid-clear-4.json",
+  "duration": 12.091
+}

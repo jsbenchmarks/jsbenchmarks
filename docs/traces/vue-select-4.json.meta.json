@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "select",
+  "runIndex": 4,
+  "memory": 10526656,
+  "traceFile": "vue-select-4.json",
+  "duration": 10.015
+}

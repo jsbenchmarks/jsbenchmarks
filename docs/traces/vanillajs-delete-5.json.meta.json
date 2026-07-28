@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "delete",
+  "runIndex": 5,
+  "memory": 1707060,
+  "traceFile": "vanillajs-delete-5.json",
+  "duration": 40.699
+}

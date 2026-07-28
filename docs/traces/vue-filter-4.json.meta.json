@@ -1,0 +1,8 @@
+{
+  "framework": "vue",
+  "benchmark": "filter",
+  "runIndex": 4,
+  "memory": 8353836,
+  "traceFile": "vue-filter-4.json",
+  "duration": 43.709
+}

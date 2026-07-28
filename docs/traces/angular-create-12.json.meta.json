@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "create",
+  "runIndex": 12,
+  "memory": 8049472,
+  "traceFile": "angular-create-12.json",
+  "duration": 131.462
+}

@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "replace",
+  "runIndex": 14,
+  "memory": 2577676,
+  "traceFile": "vanillajs-replace-14.json",
+  "duration": 113.243
+}

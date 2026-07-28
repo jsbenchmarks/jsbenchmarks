@@ -1,0 +1,8 @@
+{
+  "framework": "ripple",
+  "benchmark": "delete",
+  "runIndex": 4,
+  "memory": 5824736,
+  "traceFile": "ripple-delete-4.json",
+  "duration": 31.994
+}

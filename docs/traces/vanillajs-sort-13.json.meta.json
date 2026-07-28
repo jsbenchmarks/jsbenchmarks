@@ -1,0 +1,8 @@
+{
+  "framework": "vanillajs",
+  "benchmark": "sort",
+  "runIndex": 13,
+  "memory": 1667648,
+  "traceFile": "vanillajs-sort-13.json",
+  "duration": 111.759
+}

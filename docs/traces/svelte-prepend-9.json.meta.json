@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "prepend",
+  "runIndex": 9,
+  "memory": 5361284,
+  "traceFile": "svelte-prepend-9.json",
+  "duration": 16.206
+}

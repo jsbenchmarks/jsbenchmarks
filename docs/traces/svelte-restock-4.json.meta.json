@@ -1,0 +1,8 @@
+{
+  "framework": "svelte",
+  "benchmark": "restock",
+  "runIndex": 4,
+  "memory": 5462708,
+  "traceFile": "svelte-restock-4.json",
+  "duration": 17.8
+}

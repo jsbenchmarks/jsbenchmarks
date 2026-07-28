@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "restock",
+  "runIndex": 12,
+  "memory": 2905748,
+  "traceFile": "thyn-restock-12.json",
+  "duration": 25.377
+}

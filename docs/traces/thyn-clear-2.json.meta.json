@@ -1,0 +1,8 @@
+{
+  "framework": "thyn",
+  "benchmark": "clear",
+  "runIndex": 2,
+  "memory": 1233956,
+  "traceFile": "thyn-clear-2.json",
+  "duration": 9.866
+}

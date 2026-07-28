@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "benchmark": "insert",
+  "runIndex": 5,
+  "memory": 8073212,
+  "traceFile": "angular-insert-5.json",
+  "duration": 17.207
+}
