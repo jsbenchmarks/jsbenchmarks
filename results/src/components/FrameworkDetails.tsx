@@ -33,7 +33,6 @@ export function FrameworkDetails() {
                     </h1>
 
                     <div className="FrameworkDetails-links">
-                        <a href={`/demos/${data.framework}/index.html`} target="_blank">Demo</a>
                         {data.website && <a href={data.website} target="_blank" rel="noopener noreferrer">Website</a>}
                         {data.gitHubUrl && <a href={data.gitHubUrl} target="_blank" rel="noopener noreferrer">GitHub</a>}
                     </div>
